@@ -1,0 +1,21 @@
+# Python virtual environment
+Backend/venv/
+Backend/.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Frontend
+Frontend/node_modules/
+Frontend/dist/
+
+Event_Board_Build_Worksheet.pdf
