@@ -8,7 +8,6 @@ class Settings(BaseSettings):
     environment: str = "development"
     app_name: str = "Local Event & Meetup Board API"
 
-    # SQLite for now — swap this one line for a postgresql+asyncpg:// URL later
     database_url: str = "sqlite+aiosqlite:///./event_board.db"
 
     jwt_secret_key: str = "CHANGE_ME_IN_PROD"
