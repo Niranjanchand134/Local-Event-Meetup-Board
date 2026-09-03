@@ -16,6 +16,7 @@ import { Route as ManageEventRouteImport } from './routes/manage-event'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 
@@ -54,6 +55,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/admin/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/manage-event'
     | '/signup'
     | '/admin/reports'
+    | '/admin/users'
     | '/events/$eventId'
     | '/admin/'
     | '/events/'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/manage-event'
     | '/signup'
     | '/admin/reports'
+    | '/admin/users'
     | '/events/$eventId'
     | '/admin'
     | '/events'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/manage-event'
     | '/signup'
     | '/admin/reports'
+    | '/admin/users'
     | '/events/$eventId'
     | '/admin/'
     | '/events/'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   ManageEventRoute: typeof ManageEventRoute
   SignupRoute: typeof SignupRoute
   AdminReportsRoute: typeof AdminReportsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/': {
       id: '/events/'
       path: '/events'
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManageEventRoute: ManageEventRoute,
   SignupRoute: SignupRoute,
   AdminReportsRoute: AdminReportsRoute,
+  AdminUsersRoute: AdminUsersRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   EventsIndexRoute: EventsIndexRoute,

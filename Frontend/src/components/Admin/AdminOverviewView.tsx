@@ -41,7 +41,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
             <span className="material-symbols-outlined text-[#ffb4ab] text-[20px]">group</span>
           </div>
           <div className="flex items-end gap-3">
-            <span className="font-headline-xl text-[38px] font-bold text-[#e5e2e1] font-data-mono">14,203</span>
+            <span className="font-headline-xl text-[16px] font-bold text-[#e5e2e1] font-data-mono">14,203</span>
             <span className="font-data-mono text-[12px] text-[#c6c6c7] mb-1.5">+124 this week</span>
           </div>
         </div>
@@ -53,7 +53,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
             <span className="material-symbols-outlined text-[#ffb4ab] text-[20px]">event_note</span>
           </div>
           <div className="flex items-end gap-3">
-            <span className="font-headline-xl text-[38px] font-bold text-[#e5e2e1] font-data-mono">3,892</span>
+            <span className="font-headline-xl text-[16px] font-bold text-[#e5e2e1] font-data-mono">3,892</span>
             <span className="font-data-mono text-[12px] text-[#c6c6c7] mb-1.5">+45 this week</span>
           </div>
         </div>
@@ -87,7 +87,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
             <span className="material-symbols-outlined text-[#ffb4ab] text-[20px]">how_to_reg</span>
           </div>
           <div className="flex items-end gap-3">
-            <span className="font-headline-xl text-[38px] font-bold text-[#e5e2e1] font-data-mono">28.4k</span>
+            <span className="font-headline-xl text-[16px] font-bold text-[#e5e2e1] font-data-mono">28.4k</span>
             <span className="font-data-mono text-[12px] text-[#c6c6c7] mb-1.5">Platform wide</span>
           </div>
         </div>
@@ -139,9 +139,8 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
                   style={{ height: bar.height }}
                 >
                   <div
-                    className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#2a2a2a] text-[#e5e2e1] px-2.5 py-1 rounded-md transition-opacity whitespace-nowrap font-data-mono text-[12px] border border-[#353534] shadow-lg pointer-events-none ${
-                      activeBarIndex === i ? 'opacity-100' : 'opacity-0'
-                    }`}
+                    className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#2a2a2a] text-[#e5e2e1] px-2.5 py-1 rounded-md transition-opacity whitespace-nowrap font-data-mono text-[12px] border border-[#353534] shadow-lg pointer-events-none ${activeBarIndex === i ? 'opacity-100' : 'opacity-0'
+                      }`}
                   >
                     {bar.count}
                   </div>
@@ -328,15 +327,14 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
                     </td>
                     <td className="p-4">
                       <span
-                        className={`px-2 py-1 rounded text-[10px] font-label-caps font-bold tracking-wider ${
-                          log.type === 'EVENT'
-                            ? 'bg-[#ffb4ab]/20 text-[#ffb4ab]'
-                            : log.type === 'REPORT'
+                        className={`px-2 py-1 rounded text-[10px] font-label-caps font-bold tracking-wider ${log.type === 'EVENT'
+                          ? 'bg-[#ffb4ab]/20 text-[#ffb4ab]'
+                          : log.type === 'REPORT'
                             ? 'bg-[#93000a]/50 text-[#ffdad6]'
                             : log.type === 'SYSTEM'
-                            ? 'bg-[#bdc7d8]/20 text-[#bdc7d8]'
-                            : 'bg-[#353534] text-[#e6bdb8]'
-                        }`}
+                              ? 'bg-[#bdc7d8]/20 text-[#bdc7d8]'
+                              : 'bg-[#353534] text-[#e6bdb8]'
+                          }`}
                       >
                         {log.type}
                       </span>

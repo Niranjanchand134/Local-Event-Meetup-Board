@@ -5,6 +5,7 @@ export type ScreenType =
   | 'dashboard' 
   | 'manage-event' 
   | 'admin' 
+  | 'admin-users' 
   | 'admin-reports' 
   | 'login' 
   | 'signup';
@@ -105,4 +106,15 @@ export interface UserProfile {
     upcoming: number;
     waitlisted: number;
   };
+}
+
+export interface AdminUserRecord {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  role: 'ADMIN' | 'USER';
+  eventsCreated: number;
+  eventsJoined: number;
+  status: 'ACTIVE' | 'SUSPENDED';
 }

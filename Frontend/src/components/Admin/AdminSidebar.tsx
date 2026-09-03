@@ -1,6 +1,7 @@
 import React from 'react';
 import { LOGO_URL } from '../../data/mockData';
 import type { ScreenType } from '../../types/eventboard';
+import { useAuth } from '../../context/AuthContext';
 
 interface AdminSidebarProps {
   currentScreen: ScreenType;
@@ -8,6 +9,8 @@ interface AdminSidebarProps {
 }
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentScreen, onNavigate }) => {
+  const { logout } = useAuth();
+
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#201f1f] border-r border-[#353534] z-50 flex flex-col">
       {/* Admin Header */}
@@ -40,7 +43,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentScreen, onNav
         </button>
 
         <button
-          onClick={() => onNavigate('events')}
           className="w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase text-[#e6bdb8] hover:bg-[#2a2a2a] hover:text-[#e5e2e1] transition-all"
         >
           <span className="material-symbols-outlined mr-3 text-[20px]">event</span>
@@ -48,8 +50,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentScreen, onNav
         </button>
 
         <button
-          onClick={() => onNavigate('manage-event')}
-          className="w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase text-[#e6bdb8] hover:bg-[#2a2a2a] hover:text-[#e5e2e1] transition-all"
+          onClick={() => onNavigate('admin-users')}
+          className={`w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase transition-all ${
+            currentScreen === 'admin-users'
+              ? 'bg-[#dc2626] text-[#fff6f5] font-bold shadow-md'
+              : 'text-[#e6bdb8] hover:bg-[#2a2a2a] hover:text-[#e5e2e1]'
+          }`}
         >
           <span className="material-symbols-outlined mr-3 text-[20px]">group</span>
           Users &amp; Hosts
@@ -71,7 +77,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentScreen, onNav
         </button>
 
         <button
-          onClick={() => onNavigate('events')}
           className="w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase text-[#e6bdb8] hover:bg-[#2a2a2a] hover:text-[#e5e2e1] transition-all"
         >
           <span className="material-symbols-outlined mr-3 text-[20px]">category</span>
@@ -80,13 +85,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentScreen, onNav
       </nav>
 
       {/* Exit Admin */}
-      <div className="p-4 border-t border-[#353534]">
+      <div className="p-4 border-t border-[#353534] space-y-1">
         <button
-          onClick={() => onNavigate('home')}
-          className="w-full flex items-center px-4 py-3 rounded text-[#e6bdb8] hover:text-[#ffb4ab] hover:bg-[#2a2a2a] transition-all font-label-caps text-[12px] uppercase"
+          onClick={() => {
+            logout();
+            onNavigate('login');
+          }}
+          className="w-full flex items-center px-4 py-2.5 rounded text-[#ffb4ab] hover:text-[#ffdad6] hover:bg-[#690005]/40 transition-all font-label-caps text-[12px] uppercase font-bold"
         >
-          <span className="material-symbols-outlined mr-3 text-[20px]">logout</span>
-          Exit Admin
+          <span className="material-symbols-outlined mr-3 text-[18px]">logout</span>
+          Sign Out Admin
         </button>
       </div>
     </aside>

@@ -23,6 +23,8 @@ const screenToPath = (screen: ScreenType, eventId?: string): string => {
       return '/manage-event';
     case 'admin':
       return '/admin';
+    case 'admin-users':
+      return '/admin/users';
     case 'admin-reports':
       return '/admin/reports';
     case 'login':
@@ -41,6 +43,7 @@ const pathToScreen = (pathname: string): ScreenType => {
   if (pathname === '/dashboard') return 'dashboard';
   if (pathname === '/manage-event') return 'manage-event';
   if (pathname === '/admin/reports') return 'admin-reports';
+  if (pathname === '/admin/users') return 'admin-users';
   if (pathname === '/admin') return 'admin';
   if (pathname === '/login') return 'login';
   if (pathname === '/signup') return 'signup';

@@ -1,5 +1,4 @@
-import type { EventItem, AttendeeRecord, ReportItem, SystemLogItem, UserProfile } from '../types/eventboard';
-
+import type { EventItem, AttendeeRecord, ReportItem, SystemLogItem, UserProfile, AdminUserRecord } from '../types/eventboard';
 export const LOGO_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuDAb7_LxrS3S0YbUEEZngQzJnqwhVfgzMU01RLW-25C__hrgKsc0vvSp6AgEOcjq-Mu9N6Jo7dNxW0VIqZmNXXPyyXwyNB_RYwRhUuOZ9oSqp8MsC6mriUEKVuX4KUeAibtXO0MSGsoJTcV2UZaXAhiuV2vbiWsugk2Yv9d4Xf3gw-BI57hPKtgkMrEbTuEbAYk9ndJ9FkgN2KtSz9KSy2G8zeziZqBQMo2HLH_bCRSturtscTuIAg";
 
 export const USER_AVATAR = "https://lh3.googleusercontent.com/aida-public/AB6AXuC4PehM_ggTDfieaL0mNlJeSyJij5Ojwq0p7uBQXONLEy5MQlA5JjPQlrLVmSI_TwWmXZeKWUubWgGmiZRQGlauVJ0Sx1v5NaKjWv9tRIQrXSRwBkf9CDOHuLVRdI72vqd-5PyOaBfI8-wkuOl3MgVRqQEthgWbuII_u2erEpW_-LlYGjA2xxnUfMPuZnfRSeROACCfxI0SnShZOs9Src8m_B1akwpf_7pPTXv-Ygnpmf-MOazyx_c";
@@ -400,4 +399,43 @@ export const systemLogs: SystemLogItem[] = [
     detail: "Spam reported on Event #8932",
     subdetail: "Reported by 3 unique users"
   }
+];
+
+export const adminUsersData: AdminUserRecord[] = [
+  {
+    id: 'usr-1',
+    name: 'Sarah Jenkins',
+    email: 'sarah.j@sys-admin.network',
+    role: 'ADMIN',
+    eventsCreated: 142,
+    eventsJoined: 1024,
+    status: 'ACTIVE',
+  },
+  {
+    id: 'usr-2',
+    name: 'David Chen',
+    email: 'd.chen@external-node.io',
+    role: 'USER',
+    eventsCreated: 0,
+    eventsJoined: 14,
+    status: 'ACTIVE',
+  },
+  {
+    id: 'usr-3',
+    name: 'Unknown Origin',
+    email: 'ERR_NODE_REDACTED',
+    role: 'USER',
+    eventsCreated: 0,
+    eventsJoined: 0,
+    status: 'SUSPENDED',
+  },
+  {
+    id: 'usr-4',
+    name: 'Marcus Vance',
+    email: 'm.vance@core-systems.com',
+    role: 'ADMIN',
+    eventsCreated: 38,
+    eventsJoined: 219,
+    status: 'ACTIVE',
+  },
 ];

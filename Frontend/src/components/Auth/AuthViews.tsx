@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { ScreenType } from '../../types/eventboard';
+import { useAuth } from '../../context/AuthContext';
 
 interface AuthViewProps {
   initialMode?: 'login' | 'signup';
@@ -7,20 +8,55 @@ interface AuthViewProps {
 }
 
 export const AuthView: React.FC<AuthViewProps> = ({ initialMode = 'login', onNavigate }) => {
+  const { login, signup } = useAuth();
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState('Attendee');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => {
+
+    try {
+      if (isLogin) {
+        const loggedUser = await login(email, password);
+        if (loggedUser.role === 'admin') {
+          onNavigate('admin');
+        } else {
+          onNavigate('dashboard');
+        }
+      } else {
+        const requestedRole = role === 'Host' ? 'organizer' : 'attendee';
+        const newUser = await signup(fullName, email, password, requestedRole);
+        if (newUser.role === 'admin') {
+          onNavigate('admin');
+        } else {
+          onNavigate('dashboard');
+        }
+      }
+    } catch (err: any) {
+      console.error('Auth error:', err);
+      const detail = err.response?.data?.detail;
+      if (typeof detail === 'string') {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        setError(detail.map((d: any) => d.msg).join(', '));
+      } else {
+        setError('Authentication failed. Please check your credentials and try again.');
+      }
+    } finally {
       setLoading(false);
-      onNavigate('dashboard');
-    }, 800);
+    }
+  };
+
+  const handleModeSwitch = (mode: boolean) => {
+    setIsLogin(mode);
+    setError(null);
   };
 
   return (
@@ -40,10 +76,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ initialMode = 'login', onNav
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex rounded-xl bg-[#131313] p-1 mb-8 border border-[#353534]">
+        <div className="flex rounded-xl bg-[#131313] p-1 mb-6 border border-[#353534]">
           <button
             type="button"
-            onClick={() => setIsLogin(true)}
+            onClick={() => handleModeSwitch(true)}
             className={`flex-1 py-2 rounded-lg font-label-caps text-[12px] font-bold transition-all ${
               isLogin ? 'bg-[#2a2a2a] text-[#ffb4ab] shadow-sm' : 'text-[#e6bdb8] hover:text-white'
             }`}
@@ -52,7 +88,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ initialMode = 'login', onNav
           </button>
           <button
             type="button"
-            onClick={() => setIsLogin(false)}
+            onClick={() => handleModeSwitch(false)}
             className={`flex-1 py-2 rounded-lg font-label-caps text-[12px] font-bold transition-all ${
               !isLogin ? 'bg-[#2a2a2a] text-[#ffb4ab] shadow-sm' : 'text-[#e6bdb8] hover:text-white'
             }`}
@@ -60,6 +96,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ initialMode = 'login', onNav
             REGISTER
           </button>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-6 p-3 rounded-xl bg-[#690005]/40 border border-[#ffb4ab]/50 text-[#ffdad6] text-[13px] flex items-center gap-2.5">
+            <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">error</span>
+            <span>{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
@@ -152,7 +196,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ initialMode = 'login', onNav
           <p className="text-[13px] text-[#e6bdb8]">
             {isLogin ? "Don't have an account yet?" : "Already have an account?"}{' '}
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => handleModeSwitch(!isLogin)}
               className="text-[#ffb4ab] font-bold hover:underline ml-1"
             >
               {isLogin ? 'Sign up' : 'Log in'}

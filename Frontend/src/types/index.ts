@@ -9,6 +9,16 @@ export interface User {
   role: UserRole;
 }
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  requested_role: string;
+  is_suspended: boolean;
+  is_verified_organizer: boolean;
+}
+
 export interface Category {
   id: string;
   name: string;

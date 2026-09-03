@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ScreenType } from '../types/eventboard';
-import { LOGO_URL, currentUser } from '../data/mockData';
+import { LOGO_URL } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   currentScreen: ScreenType;
@@ -9,6 +10,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpenCreateModal }) => {
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   // If in admin mode, the header has a slightly different layout matching the screenshot
-  const isAdminView = currentScreen === 'admin' || currentScreen === 'admin-reports';
+  const isAdminView = (currentScreen as string).startsWith('admin');
 
   if (isAdminView) {
     return (
@@ -62,12 +64,44 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
             )}
           </div>
 
-          <div 
-            onClick={() => onNavigate('dashboard')}
-            className="w-8 h-8 rounded-full bg-[#ffb4ab] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#ffdad6] transition-all"
-            title="User Profile"
-          >
-            <span className="material-symbols-outlined text-[#690005] text-[18px]">person</span>
+          <div className="relative">
+            <div
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              className="w-8 h-8 rounded-full bg-[#ffb4ab] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#ffdad6] transition-all font-bold text-[#690005] text-[14px]"
+              title={user?.name ?? 'Admin'}
+            >
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+            </div>
+
+            {userDropdownOpen && (
+              <div className="absolute right-0 mt-3 w-56 bg-[#201f1f] border border-[#353534] rounded-xl shadow-2xl p-2 z-50 animate-in fade-in">
+                <div className="px-3 py-2 border-b border-[#353534]">
+                  <p className="font-semibold text-[14px] text-white">{user?.name ?? 'System Admin'}</p>
+                  <p className="text-[12px] text-[#ffb4ab] font-data-mono font-bold">ADMINISTRATOR</p>
+                </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => { onNavigate('home'); setUserDropdownOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">home</span>
+                    Exit to Main Site
+                  </button>
+                  <div className="h-px bg-[#353534] my-1"></div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setUserDropdownOpen(false);
+                      onNavigate('login');
+                    }}
+                    className="w-full text-left px-3 py-2 text-[13px] text-[#ffb4ab] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                    Sign Out Admin
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -78,8 +112,7 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
     <header className="fixed top-0 w-full z-50 bg-[#131313]/90 backdrop-blur-xl border-b border-[#353534]">
       <div className="h-[72px] max-w-[1280px] mx-auto px-5 lg:px-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <div 
-          onClick={() => onNavigate('home')}
+        <div
           className="flex items-center gap-3 cursor-pointer group"
         >
           <img
@@ -96,53 +129,39 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
         <nav className="hidden lg:flex items-center gap-8 h-full">
           <button
             onClick={() => onNavigate('home')}
-            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${
-              currentScreen === 'home'
-                ? 'text-[#ffb4ab] border-[#ffb4ab]'
-                : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
-            }`}
+            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${currentScreen === 'home'
+              ? 'text-[#ffb4ab] border-[#ffb4ab]'
+              : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
+              }`}
           >
             Discover
           </button>
           <button
             onClick={() => onNavigate('events')}
-            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${
-              currentScreen === 'events' || currentScreen === 'event-detail'
-                ? 'text-[#ffb4ab] border-[#ffb4ab]'
-                : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
-            }`}
+            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${currentScreen === 'events' || currentScreen === 'event-detail'
+              ? 'text-[#ffb4ab] border-[#ffb4ab]'
+              : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
+              }`}
           >
             Events
           </button>
           <button
             onClick={() => onNavigate('dashboard')}
-            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${
-              currentScreen === 'dashboard'
-                ? 'text-[#ffb4ab] border-[#ffb4ab]'
-                : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
-            }`}
+            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${currentScreen === 'dashboard'
+              ? 'text-[#ffb4ab] border-[#ffb4ab]'
+              : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
+              }`}
           >
             Dashboard
           </button>
           <button
             onClick={() => onNavigate('manage-event')}
-            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${
-              currentScreen === 'manage-event'
-                ? 'text-[#ffb4ab] border-[#ffb4ab]'
-                : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
-            }`}
+            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${currentScreen === 'manage-event'
+              ? 'text-[#ffb4ab] border-[#ffb4ab]'
+              : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
+              }`}
           >
             Host Hub
-          </button>
-          <button
-            onClick={() => onNavigate('admin')}
-            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${
-              (currentScreen as string) === 'admin' || (currentScreen as string) === 'admin-reports'
-                ? 'text-[#ffb4ab] border-[#ffb4ab]'
-                : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
-            }`}
-          >
-            Admin
           </button>
         </nav>
 
@@ -226,56 +245,69 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
             </div>
           </div>
 
-          {/* User Profile Avatar with dropdown */}
-          <div className="relative">
-            <div
-              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="w-8 h-8 rounded-full bg-[#ffb4ab] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#ffdad6] transition-all overflow-hidden"
-              title="User Account"
-            >
-              <img src={currentUser.avatar} alt="User" className="w-full h-full object-cover" />
-            </div>
-
-            {userDropdownOpen && (
-              <div className="absolute right-0 mt-3 w-56 bg-[#201f1f] border border-[#353534] rounded-xl shadow-2xl p-2 z-50 animate-in fade-in">
-                <div className="px-3 py-2 border-b border-[#353534]">
-                  <p className="font-semibold text-[14px] text-white">{currentUser.name}</p>
-                  <p className="text-[12px] text-[#e6bdb8]">{currentUser.role}</p>
-                </div>
-                <div className="py-1">
-                  <button
-                    onClick={() => { onNavigate('dashboard'); setUserDropdownOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">account_circle</span>
-                    Profile & Activity
-                  </button>
-                  <button
-                    onClick={() => { onNavigate('manage-event'); setUserDropdownOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">dashboard_customize</span>
-                    Host Event Hub
-                  </button>
-                  <button
-                    onClick={() => { onNavigate('admin'); setUserDropdownOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
-                    Admin Panel
-                  </button>
-                  <div className="h-px bg-[#353534] my-1"></div>
-                  <button
-                    onClick={() => { onNavigate('login'); setUserDropdownOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[13px] text-[#ffb4ab] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">logout</span>
-                    Sign Out / Switch Account
-                  </button>
-                </div>
+          {/* User Profile Avatar with dropdown or Sign In button */}
+          {isAuthenticated ? (
+            <div className="relative">
+              <div
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="w-8 h-8 rounded-full bg-[#ffb4ab] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-[#ffdad6] transition-all overflow-hidden font-bold text-[#690005] text-[14px]"
+                title={user?.name ?? 'User Account'}
+              >
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
-            )}
-          </div>
+
+              {userDropdownOpen && (
+                <div className="absolute right-0 mt-3 w-56 bg-[#201f1f] border border-[#353534] rounded-xl shadow-2xl p-2 z-50 animate-in fade-in">
+                  <div className="px-3 py-2 border-b border-[#353534]">
+                    <p className="font-semibold text-[14px] text-white">{user?.name}</p>
+                    <p className="text-[12px] text-[#e6bdb8] flex items-center gap-1 uppercase font-data-mono">
+                      <span>{user?.role}</span>
+                      {isAdmin && (
+                        <span className="bg-[#690005] text-[#ffdad6] text-[9px] px-1 py-0.2 rounded">
+                          ADMIN
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="py-1">
+                    <button
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">account_circle</span>
+                      Profile & Activity
+                    </button>
+                    <button
+                      onClick={() => { onNavigate('manage-event'); setUserDropdownOpen(false); }}
+                      className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">dashboard_customize</span>
+                      Host Event Hub
+                    </button>
+                    <div className="h-px bg-[#353534] my-1"></div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserDropdownOpen(false);
+                        onNavigate('login');
+                      }}
+                      className="w-full text-left px-3 py-2 text-[13px] text-[#ffb4ab] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">logout</span>
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => onNavigate('login')}
+              className="bg-[#2a2a2a] hover:bg-[#353534] text-[#ffb4ab] border border-[#353534] px-4 py-2 rounded font-label-caps text-[12px] font-bold uppercase transition-all"
+            >
+              Sign In
+            </button>
+          )}
 
           {/* Mobile menu toggle */}
           <button
@@ -303,41 +335,36 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
           </div>
           <button
             onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
-            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${
-              currentScreen === 'home' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
-            }`}
+            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'home' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+              }`}
           >
             Discover
           </button>
           <button
             onClick={() => { onNavigate('events'); setMobileMenuOpen(false); }}
-            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${
-              currentScreen === 'events' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
-            }`}
+            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'events' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+              }`}
           >
             Events Directory
           </button>
           <button
             onClick={() => { onNavigate('dashboard'); setMobileMenuOpen(false); }}
-            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${
-              currentScreen === 'dashboard' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
-            }`}
+            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'dashboard' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+              }`}
           >
             My Dashboard
           </button>
           <button
             onClick={() => { onNavigate('manage-event'); setMobileMenuOpen(false); }}
-            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${
-              currentScreen === 'manage-event' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
-            }`}
+            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'manage-event' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+              }`}
           >
             Host Management
           </button>
           <button
             onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
-            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${
-              (currentScreen as string) === 'admin' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
-            }`}
+            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${(currentScreen as string) === 'admin' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+              }`}
           >
             Admin Portal
           </button>
