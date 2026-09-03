@@ -22,4 +22,5 @@ class User(Base):
     )
     requested_role: Mapped[str] = mapped_column(String(20), default="attendee", nullable=False)
     is_suspended: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_verified_organizer: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

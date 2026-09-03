@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
-from models import User  # noqa: F401 — registers model with Base.metadata
+from models import User
 from routers import auth, users
 
 app = FastAPI(title="Local Event & Meetup Board API")
@@ -18,8 +18,14 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def on_startup():
+    print("STARTUP: connecting to database...")
+
     async with engine.begin() as conn:
+        print("STARTUP: database connected")
+
         await conn.run_sync(Base.metadata.create_all)
+
+        print("STARTUP: tables created")
 
 
 app.include_router(auth.router)
@@ -28,4 +34,7 @@ app.include_router(users.router)
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "service": "Local Event & Meetup Board API"}
+    return {
+        "status": "ok",
+        "service": "Local Event & Meetup Board API",
+    }
