@@ -8,9 +8,13 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isOrganizer: boolean;
+  isVerifiedOrganizer: boolean;
+  isNormalUser: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
   signup: (name: string, email: string, password: string, requestedRole?: string) => Promise<AuthUser>;
   logout: () => void;
+  refreshUser: () => Promise<AuthUser | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,31 +24,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('access_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const refreshUser = async (): Promise<AuthUser | null> => {
+    const storedToken = localStorage.getItem('access_token');
+    if (!storedToken) {
+      setUser(null);
+      return null;
+    }
+
+    try {
+      const response = await api.get<AuthUser>('/users/me');
+      setUser(response.data);
+      setToken(storedToken);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to validate session token:', error);
+      localStorage.removeItem('access_token');
+      setToken(null);
+      setUser(null);
+      return null;
+    }
+  };
+
   // Fetch current logged-in user on app mount or when token changes
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const storedToken = localStorage.getItem('access_token');
-      if (!storedToken) {
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const response = await api.get<AuthUser>('/users/me');
-        setUser(response.data);
-        setToken(storedToken);
-      } catch (error) {
-        console.error('Failed to validate session token:', error);
-        localStorage.removeItem('access_token');
-        setToken(null);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
+    const initAuth = async () => {
+      await refreshUser();
+      setIsLoading(false);
     };
 
-    fetchCurrentUser();
+    initAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<AuthUser> => {
@@ -74,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     name: string,
     email: string,
     password: string,
-    requestedRole: string = 'attendee'
+    requestedRole: string = 'user'
   ): Promise<AuthUser> => {
     setIsLoading(true);
     try {
@@ -108,6 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin';
+  const isOrganizer = user?.role === 'organizer' || user?.role === 'admin';
+  const isVerifiedOrganizer = (user?.role === 'organizer' && user?.is_verified_organizer) || user?.role === 'admin';
+  const isNormalUser = user?.role === 'user';
 
   return (
     <AuthContext.Provider
@@ -117,9 +128,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         isAuthenticated,
         isAdmin,
+        isOrganizer,
+        isVerifiedOrganizer,
+        isNormalUser,
         login,
         signup,
         logout,
+        refreshUser,
       }}
     >
       {children}

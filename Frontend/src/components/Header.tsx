@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpenCreateModal }) => {
-  const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin, isOrganizer } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,6 +113,7 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
       <div className="h-[72px] max-w-[1280px] mx-auto px-5 lg:px-16 flex items-center justify-between">
         {/* Brand Logo */}
         <div
+          onClick={() => onNavigate('home')}
           className="flex items-center gap-3 cursor-pointer group"
         >
           <img
@@ -154,15 +155,28 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
           >
             Dashboard
           </button>
-          <button
-            onClick={() => onNavigate('manage-event')}
-            className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${currentScreen === 'manage-event'
-              ? 'text-[#ffb4ab] border-[#ffb4ab]'
-              : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
-              }`}
-          >
-            Host Hub
-          </button>
+          {isOrganizer && (
+            <button
+              onClick={() => onNavigate('manage-event')}
+              className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${currentScreen === 'manage-event'
+                ? 'text-[#ffb4ab] border-[#ffb4ab]'
+                : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
+                }`}
+            >
+              Host Hub
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={() => onNavigate('admin')}
+              className={`font-label-caps text-label-caps uppercase transition-colors py-6 h-full border-b-2 ${(currentScreen as string).startsWith('admin')
+                ? 'text-[#ffb4ab] border-[#ffb4ab]'
+                : 'text-[#e6bdb8] hover:text-[#e5e2e1] border-transparent'
+                }`}
+            >
+              Admin
+            </button>
+          )}
         </nav>
 
         {/* Right CTA Actions */}
@@ -202,14 +216,16 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
               )}
             </div>
 
-            {/* Create Event CTA */}
-            <button
-              onClick={onOpenCreateModal}
-              className="bg-[#dc2626] hover:bg-[#b91c1c] text-[#fff6f5] px-4 py-2 rounded font-label-caps text-label-caps uppercase transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              CREATE EVENT
-            </button>
+            {/* Create Event CTA - Only for Organizers & Admins */}
+            {isOrganizer && (
+              <button
+                onClick={onOpenCreateModal}
+                className="bg-[#dc2626] hover:bg-[#b91c1c] text-[#fff6f5] px-4 py-2 rounded font-label-caps text-label-caps uppercase transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                CREATE EVENT
+              </button>
+            )}
 
             {/* Notification bell */}
             <div className="relative">
@@ -259,31 +275,76 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-3 w-56 bg-[#201f1f] border border-[#353534] rounded-xl shadow-2xl p-2 z-50 animate-in fade-in">
                   <div className="px-3 py-2 border-b border-[#353534]">
-                    <p className="font-semibold text-[14px] text-white">{user?.name}</p>
-                    <p className="text-[12px] text-[#e6bdb8] flex items-center gap-1 uppercase font-data-mono">
-                      <span>{user?.role}</span>
-                      {isAdmin && (
-                        <span className="bg-[#690005] text-[#ffdad6] text-[9px] px-1 py-0.2 rounded">
+                    <p className="font-semibold text-[14px] text-white truncate">{user?.name}</p>
+                    <div className="text-[11px] text-[#e6bdb8] flex items-center gap-1.5 uppercase font-data-mono mt-0.5">
+                      {isAdmin ? (
+                        <span className="bg-[#690005] text-[#ffdad6] text-[10px] font-bold px-1.5 py-0.5 rounded">
                           ADMIN
                         </span>
+                      ) : user?.role === 'organizer' ? (
+                        <span className="bg-[#ffb4ab]/20 text-[#ffb4ab] text-[10px] font-bold px-1.5 py-0.5 rounded border border-[#ffb4ab]/30">
+                          ORGANIZER
+                        </span>
+                      ) : (
+                        <span className="bg-[#353534] text-[#e5e2e1] text-[10px] font-bold px-1.5 py-0.5 rounded">
+                          ATTENDEE
+                        </span>
                       )}
-                    </p>
+                    </div>
                   </div>
                   <div className="py-1">
                     <button
-                      onClick={() => setUserDropdownOpen(false)}
+                      onClick={() => { onNavigate('dashboard'); setUserDropdownOpen(false); }}
                       className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">account_circle</span>
-                      Profile & Activity
+                      Profile & Dashboard
                     </button>
-                    <button
-                      onClick={() => { onNavigate('manage-event'); setUserDropdownOpen(false); }}
-                      className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">dashboard_customize</span>
-                      Host Event Hub
-                    </button>
+                    {isOrganizer && (
+                      <>
+                        <button
+                          onClick={() => { onNavigate('manage-event'); setUserDropdownOpen(false); }}
+                          className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">dashboard_customize</span>
+                          Host Event Hub
+                        </button>
+                        <button
+                          onClick={() => { onNavigate('verification'); setUserDropdownOpen(false); }}
+                          className="w-full text-left px-3 py-2 text-[13px] text-[#e5e2e1] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                          Identity Verification
+                          {user?.is_verified_organizer ? (
+                            <span className="ml-auto text-[9px] bg-[#ffb4ab]/20 text-[#ffb4ab] px-1 rounded">
+                              ✓
+                            </span>
+                          ) : (
+                            <span className="ml-auto text-[9px] bg-[#690005] text-[#ffdad6] px-1 rounded">
+                              UNVERIFIED
+                            </span>
+                          )}
+                        </button>
+                      </>
+                    )}
+                    {isAdmin && (
+                      <>
+                        <button
+                          onClick={() => { onNavigate('admin-verifications'); setUserDropdownOpen(false); }}
+                          className="w-full text-left px-3 py-2 text-[13px] text-[#ffb4ab] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                          Review Verifications
+                        </button>
+                        <button
+                          onClick={() => { onNavigate('admin'); setUserDropdownOpen(false); }}
+                          className="w-full text-left px-3 py-2 text-[13px] text-[#ffb4ab] hover:bg-[#2a2a2a] rounded flex items-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                          Admin Portal
+                        </button>
+                      </>
+                    )}
                     <div className="h-px bg-[#353534] my-1"></div>
                     <button
                       onClick={() => {
@@ -325,14 +386,17 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-[#1c1b1b] border-b border-[#353534] px-5 py-4 space-y-3 animate-in slide-in-from-top duration-200">
-          <div className="flex gap-2 mb-3">
-            <button
-              onClick={() => { onOpenCreateModal(); setMobileMenuOpen(false); }}
-              className="w-full bg-[#dc2626] text-white py-2 rounded font-label-caps text-[12px] uppercase"
-            >
-              CREATE EVENT
-            </button>
-          </div>
+          {isOrganizer && (
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={() => { onOpenCreateModal(); setMobileMenuOpen(false); }}
+                className="w-full bg-[#dc2626] text-white py-2 rounded font-label-caps text-[12px] uppercase flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                CREATE EVENT
+              </button>
+            </div>
+          )}
           <button
             onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
             className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'home' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
@@ -354,26 +418,57 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate, onOpe
           >
             My Dashboard
           </button>
-          <button
-            onClick={() => { onNavigate('manage-event'); setMobileMenuOpen(false); }}
-            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'manage-event' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
-              }`}
-          >
-            Host Management
-          </button>
-          <button
-            onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
-            className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${(currentScreen as string) === 'admin' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
-              }`}
-          >
-            Admin Portal
-          </button>
-          <button
-            onClick={() => { onNavigate('login'); setMobileMenuOpen(false); }}
-            className="block w-full text-left py-2 font-label-caps uppercase text-[13px] text-[#ffb4ab]"
-          >
-            Sign In / Register
-          </button>
+          {isOrganizer && (
+            <>
+              <button
+                onClick={() => { onNavigate('manage-event'); setMobileMenuOpen(false); }}
+                className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'manage-event' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+                  }`}
+              >
+                Host Management
+              </button>
+              <button
+                onClick={() => { onNavigate('verification'); setMobileMenuOpen(false); }}
+                className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'verification' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+                  }`}
+              >
+                Identity Verification
+              </button>
+            </>
+          )}
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => { onNavigate('admin-verifications'); setMobileMenuOpen(false); }}
+                className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${currentScreen === 'admin-verifications' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+                  }`}
+              >
+                Review Verifications
+              </button>
+              <button
+                onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
+                className={`block w-full text-left py-2 font-label-caps uppercase text-[13px] ${(currentScreen as string) === 'admin' ? 'text-[#ffb4ab]' : 'text-[#e6bdb8]'
+                  }`}
+              >
+                Admin Portal
+              </button>
+            </>
+          )}
+          {isAuthenticated ? (
+            <button
+              onClick={() => { logout(); setMobileMenuOpen(false); onNavigate('login'); }}
+              className="block w-full text-left py-2 font-label-caps uppercase text-[13px] text-[#ffb4ab]"
+            >
+              Sign Out ({user?.name})
+            </button>
+          ) : (
+            <button
+              onClick={() => { onNavigate('login'); setMobileMenuOpen(false); }}
+              className="block w-full text-left py-2 font-label-caps uppercase text-[13px] text-[#ffb4ab]"
+            >
+              Sign In / Register
+            </button>
+          )}
         </div>
       )}
     </header>

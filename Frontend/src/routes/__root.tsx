@@ -3,13 +3,12 @@ import { useState } from 'react';
 
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-// import { ScreenSwitcher } from '../components/ScreenSwitcher';
 import { AdminSidebar } from '../components/Admin/AdminSidebar';
 import { CreateEventModal } from '../components/Events/CreateEventModal';
+import { OrganizerVerificationModal } from '../components/Verification/OrganizerVerificationModal';
 import { CreateEventModalContext } from '../hooks/useCreateEventModal';
 import { useCurrentScreen, useScreenNavigate } from '../hooks/useScreenNav';
-
-import { AuthProvider } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -18,66 +17,95 @@ export const Route = createRootRoute({
 function RootLayout() {
   const currentScreen = useCurrentScreen();
   const onNavigate = useScreenNavigate();
+  const { isVerifiedOrganizer, isOrganizer, isAuthenticated } = useAuth();
+
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+
+  const handleOpenCreateModal = () => {
+    if (!isAuthenticated) {
+      onNavigate('login');
+      return;
+    }
+    if (isVerifiedOrganizer) {
+      setCreateModalOpen(true);
+    } else if (isOrganizer) {
+      setVerificationModalOpen(true);
+    } else {
+      onNavigate('events');
+    }
+  };
 
   const isAdminScreen =
-    currentScreen === 'admin' || currentScreen === 'admin-users' || currentScreen === 'admin-reports';
+    currentScreen === 'admin' ||
+    currentScreen === 'admin-users' ||
+    currentScreen === 'admin-reports' ||
+    currentScreen === 'admin-verifications';
 
   return (
-    <AuthProvider>
-      <CreateEventModalContext.Provider value={{ openCreateModal: () => setCreateModalOpen(true) }}>
-        <div className="min-h-screen bg-[#131313] text-[#e5e2e1] font-sans flex flex-col selection:bg-[#ffb4ab] selection:text-[#690005]">
-          {/* Screen Switcher Floating Widget */}
-          {/* <ScreenSwitcher currentScreen={currentScreen} onSelectScreen={onNavigate} /> */}
+    <CreateEventModalContext.Provider
+      value={{
+        openCreateModal: handleOpenCreateModal,
+        openVerificationModal: () => setVerificationModalOpen(true),
+      }}
+    >
+      <div className="min-h-screen bg-[#131313] text-[#e5e2e1] font-sans flex flex-col selection:bg-[#ffb4ab] selection:text-[#690005]">
+        {/* Create Event Modal */}
+        <CreateEventModal
+          isOpen={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          onEventCreated={(eventData) => {
+            console.log('Event published:', eventData);
+          }}
+        />
 
-          {/* Create Event Modal */}
-          <CreateEventModal
-            isOpen={createModalOpen}
-            onClose={() => setCreateModalOpen(false)}
-            onEventCreated={(eventData) => {
-              console.log('Event published:', eventData);
-            }}
-          />
+        {/* Organizer Verification Modal */}
+        <OrganizerVerificationModal
+          isOpen={verificationModalOpen}
+          onClose={() => setVerificationModalOpen(false)}
+          onSuccess={() => {
+            console.log('Verification submitted');
+          }}
+        />
 
-          {/* Admin layout with fixed sidebar or standard header/footer layout */}
-          {isAdminScreen ? (
-            <div className="flex min-h-screen">
-              {/* Admin Sidebar */}
-              <AdminSidebar currentScreen={currentScreen} onNavigate={onNavigate} />
+        {/* Admin layout with fixed sidebar or standard header/footer layout */}
+        {isAdminScreen ? (
+          <div className="flex min-h-screen">
+            {/* Admin Sidebar */}
+            <AdminSidebar currentScreen={currentScreen} onNavigate={onNavigate} />
 
-              {/* Admin Main Frame */}
-              <div className="flex-1 ml-64 flex flex-col min-h-screen">
-                <Header
-                  currentScreen={currentScreen}
-                  onNavigate={onNavigate}
-                  onOpenCreateModal={() => setCreateModalOpen(true)}
-                />
-
-                <main className="flex-1 pt-[72px] bg-[#131313]">
-                  <Outlet />
-                </main>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col min-h-screen">
-              {/* Standard Navigation Header */}
+            {/* Admin Main Frame */}
+            <div className="flex-1 ml-64 flex flex-col min-h-screen">
               <Header
                 currentScreen={currentScreen}
                 onNavigate={onNavigate}
-                onOpenCreateModal={() => setCreateModalOpen(true)}
+                onOpenCreateModal={handleOpenCreateModal}
               />
 
-              {/* Main View Container */}
-              <main className="flex-1 pt-[72px]">
+              <main className="flex-1 pt-[72px] bg-[#131313]">
                 <Outlet />
               </main>
-
-              {/* Standard Editorial Technical Footer */}
-              <Footer onNavigate={onNavigate} />
             </div>
-          )}
-        </div>
-      </CreateEventModalContext.Provider>
-    </AuthProvider>
+          </div>
+        ) : (
+          <div className="flex flex-col min-h-screen">
+            {/* Standard Navigation Header */}
+            <Header
+              currentScreen={currentScreen}
+              onNavigate={onNavigate}
+              onOpenCreateModal={handleOpenCreateModal}
+            />
+
+            {/* Main View Container */}
+            <main className="flex-1 pt-[72px]">
+              <Outlet />
+            </main>
+
+            {/* Standard Editorial Technical Footer */}
+            <Footer onNavigate={onNavigate} />
+          </div>
+        )}
+      </div>
+    </CreateEventModalContext.Provider>
   );
 }

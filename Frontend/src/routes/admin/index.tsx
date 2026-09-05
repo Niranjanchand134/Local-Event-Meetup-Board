@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { AdminOverviewView } from '../../components/Admin/AdminOverviewView';
 import { useScreenNavigate } from '../../hooks/useScreenNav';
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/admin/')({
 
 function RouteComponent() {
   const onNavigate = useScreenNavigate();
-  const { isAdmin, isLoading, user } = useAuth();
+  const { isAdmin, isLoading } = useAuth();
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {

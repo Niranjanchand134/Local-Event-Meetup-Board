@@ -4,9 +4,11 @@ export type ScreenType =
   | 'event-detail' 
   | 'dashboard' 
   | 'manage-event' 
+  | 'verification'
   | 'admin' 
   | 'admin-users' 
   | 'admin-reports' 
+  | 'admin-verifications'
   | 'login' 
   | 'signup';
 
@@ -113,7 +115,7 @@ export interface AdminUserRecord {
   name: string;
   email: string;
   avatar?: string;
-  role: 'ADMIN' | 'USER';
+  role: 'ADMIN' | 'ORGANIZER' | 'USER';
   eventsCreated: number;
   eventsJoined: number;
   status: 'ACTIVE' | 'SUSPENDED';

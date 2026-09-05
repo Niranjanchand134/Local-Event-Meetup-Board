@@ -62,6 +62,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentScreen, onNav
         </button>
 
         <button
+          onClick={() => onNavigate('admin-verifications')}
+          className={`w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase transition-all ${
+            currentScreen === 'admin-verifications'
+              ? 'bg-[#dc2626] text-[#fff6f5] font-bold shadow-md'
+              : 'text-[#e6bdb8] hover:bg-[#2a2a2a] hover:text-[#e5e2e1]'
+          }`}
+        >
+          <span className="material-symbols-outlined mr-3 text-[20px]">verified_user</span>
+          Verifications
+          <span className="ml-auto bg-[#ffb4ab]/20 text-[#ffb4ab] border border-[#ffb4ab]/40 text-[10px] px-1.5 py-0.5 rounded font-bold">
+            NEW
+          </span>
+        </button>
+
+        <button
           onClick={() => onNavigate('admin-reports')}
           className={`w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase transition-all ${
             currentScreen === 'admin-reports'

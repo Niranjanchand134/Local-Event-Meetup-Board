@@ -14,9 +14,11 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ManageEventRouteImport } from './routes/manage-event'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminVerificationsRouteImport } from './routes/admin/verifications'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 
@@ -45,6 +47,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerificationRoute = VerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -58,6 +65,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVerificationsRoute = AdminVerificationsRouteImport.update({
+  id: '/admin/verifications',
+  path: '/admin/verifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
@@ -77,8 +89,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
+  '/verification': typeof VerificationRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/verifications': typeof AdminVerificationsRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -89,8 +103,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
+  '/verification': typeof VerificationRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/verifications': typeof AdminVerificationsRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
@@ -102,8 +118,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
+  '/verification': typeof VerificationRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/verifications': typeof AdminVerificationsRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -116,8 +134,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/manage-event'
     | '/signup'
+    | '/verification'
     | '/admin/reports'
     | '/admin/users'
+    | '/admin/verifications'
     | '/events/$eventId'
     | '/admin/'
     | '/events/'
@@ -128,8 +148,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/manage-event'
     | '/signup'
+    | '/verification'
     | '/admin/reports'
     | '/admin/users'
+    | '/admin/verifications'
     | '/events/$eventId'
     | '/admin'
     | '/events'
@@ -140,8 +162,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/manage-event'
     | '/signup'
+    | '/verification'
     | '/admin/reports'
     | '/admin/users'
+    | '/admin/verifications'
     | '/events/$eventId'
     | '/admin/'
     | '/events/'
@@ -153,8 +177,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManageEventRoute: typeof ManageEventRoute
   SignupRoute: typeof SignupRoute
+  VerificationRoute: typeof VerificationRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  AdminVerificationsRoute: typeof AdminVerificationsRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
@@ -197,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verification': {
+      id: '/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof VerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/admin'
@@ -216,6 +249,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/verifications': {
+      id: '/admin/verifications'
+      path: '/admin/verifications'
+      fullPath: '/admin/verifications'
+      preLoaderRoute: typeof AdminVerificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/': {
@@ -241,8 +281,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManageEventRoute: ManageEventRoute,
   SignupRoute: SignupRoute,
+  VerificationRoute: VerificationRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminUsersRoute: AdminUsersRoute,
+  AdminVerificationsRoute: AdminVerificationsRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   EventsIndexRoute: EventsIndexRoute,

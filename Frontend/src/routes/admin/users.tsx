@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { AdminUsersView } from '../../components/Admin/AdminUsersView';
 import { useScreenNavigate } from '../../hooks/useScreenNav';

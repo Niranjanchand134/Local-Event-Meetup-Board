@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ScreenType, EventItem } from '../../types/eventboard';
 import { sampleEvents } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 
 interface DiscoverViewProps {
   onNavigate: (screen: ScreenType, eventId?: string) => void;
@@ -8,6 +9,7 @@ interface DiscoverViewProps {
 }
 
 export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCreateModal }) => {
+  const { isOrganizer } = useAuth();
   const [stats] = useState({
     eventsHosted: 10452,
     activeMembers: 25890,
@@ -91,12 +93,14 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </button>
 
-          <button
-            onClick={onOpenCreateModal}
-            className="bg-transparent border border-[#ac8884] text-[#e5e2e1] hover:bg-[#2a2a2a] px-8 py-4 rounded font-label-caps text-label-caps tracking-widest transition-all"
-          >
-            CREATE AN EVENT
-          </button>
+          {isOrganizer && (
+            <button
+              onClick={onOpenCreateModal}
+              className="bg-transparent border border-[#ac8884] text-[#e5e2e1] hover:bg-[#2a2a2a] px-8 py-4 rounded font-label-caps text-label-caps tracking-widest transition-all"
+            >
+              CREATE AN EVENT
+            </button>
+          )}
         </div>
       </section>
 
@@ -375,12 +379,23 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             Create an event, manage RSVPs, and build your community on EventBoard. It's free to get started.
           </p>
           
-          <button
-            onClick={onOpenCreateModal}
-            className="relative z-10 bg-[#ffb4ab] hover:bg-[#ffdad6] text-[#690005] px-8 py-4 rounded font-label-caps text-label-caps tracking-widest transition-all hover:scale-105 shadow-lg shadow-[#ffb4ab]/20 font-bold"
-          >
-            CREATE AN EVENT NOW
-          </button>
+          {isOrganizer ? (
+            <button
+              onClick={onOpenCreateModal}
+              className="relative z-10 bg-[#ffb4ab] hover:bg-[#ffdad6] text-[#690005] px-8 py-4 rounded font-label-caps text-label-caps tracking-widest transition-all hover:scale-105 shadow-lg shadow-[#ffb4ab]/20 font-bold flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">add_circle</span>
+              CREATE AN EVENT NOW
+            </button>
+          ) : (
+            <button
+              onClick={() => onNavigate('events')}
+              className="relative z-10 bg-[#ffb4ab] hover:bg-[#ffdad6] text-[#690005] px-8 py-4 rounded font-label-caps text-label-caps tracking-widest transition-all hover:scale-105 shadow-lg shadow-[#ffb4ab]/20 font-bold flex items-center gap-2"
+            >
+              EXPLORE ALL EVENTS
+              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          )}
         </div>
       </section>
     </div>

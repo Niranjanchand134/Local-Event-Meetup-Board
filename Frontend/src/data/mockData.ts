@@ -422,6 +422,15 @@ export const adminUsersData: AdminUserRecord[] = [
   },
   {
     id: 'usr-3',
+    name: 'Elena Rostova',
+    email: 'elena.r@community-hosts.org',
+    role: 'ORGANIZER',
+    eventsCreated: 18,
+    eventsJoined: 86,
+    status: 'ACTIVE',
+  },
+  {
+    id: 'usr-4',
     name: 'Unknown Origin',
     email: 'ERR_NODE_REDACTED',
     role: 'USER',
@@ -430,12 +439,21 @@ export const adminUsersData: AdminUserRecord[] = [
     status: 'SUSPENDED',
   },
   {
-    id: 'usr-4',
+    id: 'usr-5',
     name: 'Marcus Vance',
     email: 'm.vance@core-systems.com',
     role: 'ADMIN',
     eventsCreated: 38,
     eventsJoined: 219,
+    status: 'ACTIVE',
+  },
+  {
+    id: 'usr-6',
+    name: 'Aiden Tanaka',
+    email: 'aiden.t@techmeetup.tokyo',
+    role: 'ORGANIZER',
+    eventsCreated: 24,
+    eventsJoined: 152,
     status: 'ACTIVE',
   },
 ];

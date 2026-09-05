@@ -27,16 +27,20 @@ export const AuthView: React.FC<AuthViewProps> = ({ initialMode = 'login', onNav
         const loggedUser = await login(email, password);
         if (loggedUser.role === 'admin') {
           onNavigate('admin');
-        } else {
+        } else if (loggedUser.role === 'organizer') {
           onNavigate('dashboard');
+        } else {
+          onNavigate('home');
         }
       } else {
-        const requestedRole = role === 'Host' ? 'organizer' : 'attendee';
+        const requestedRole = role === 'Host' ? 'organizer' : 'user';
         const newUser = await signup(fullName, email, password, requestedRole);
         if (newUser.role === 'admin') {
           onNavigate('admin');
-        } else {
+        } else if (newUser.role === 'organizer') {
           onNavigate('dashboard');
+        } else {
+          onNavigate('home');
         }
       }
     } catch (err: any) {

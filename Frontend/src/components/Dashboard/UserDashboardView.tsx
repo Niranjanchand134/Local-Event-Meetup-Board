@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ScreenType } from '../../types/eventboard';
 import { currentUser } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 
 interface UserDashboardViewProps {
   onNavigate: (screen: ScreenType, eventId?: string) => void;
@@ -8,6 +9,24 @@ interface UserDashboardViewProps {
 }
 
 export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate, onOpenCreateModal }) => {
+  const { user, isOrganizer, isAdmin } = useAuth();
+
+  const displayName = user?.name || currentUser.name;
+  const userInitials = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const roleLabel = isAdmin
+    ? 'System Administrator'
+    : user?.role === 'organizer'
+    ? user.is_verified_organizer
+      ? 'Verified Event Organizer'
+      : 'Organizer (Verification Required)'
+    : 'Community Member / Attendee';
+
   return (
     <div className="flex flex-col w-full bg-[#131313] min-h-screen">
       <div className="max-w-[1280px] mx-auto w-full px-5 lg:px-16 py-12 flex flex-col lg:flex-row gap-8">
@@ -15,30 +34,45 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate
         <aside className="w-full lg:w-1/4 flex flex-col gap-6">
           {/* Profile Card */}
           <div className="bg-[#201f1f] border border-[#353534] rounded-2xl p-6 flex flex-col items-center text-center shadow-md">
-            <div className="w-24 h-24 rounded-full bg-[#2a2a2a] mb-4 overflow-hidden border-2 border-[#ac8884]">
-              <img
-                className="w-full h-full object-cover"
-                src={currentUser.avatar}
-                alt={currentUser.name}
-              />
+            <div className="w-24 h-24 rounded-full bg-[#2a2a2a] mb-4 overflow-hidden border-2 border-[#ac8884] flex items-center justify-center text-[28px] font-bold text-[#ffb4ab]">
+              {userInitials}
             </div>
             <h2 className="font-headline-md text-[20px] text-[#e5e2e1] font-bold">
-              {currentUser.name}
+              {displayName}
             </h2>
-            <p className="font-body-md text-[14px] text-[#e6bdb8]">
-              {currentUser.role}
-            </p>
+            <div className="mt-1">
+              <span className={`text-[11px] font-label-caps font-bold uppercase px-2.5 py-1 rounded-full border ${
+                isAdmin
+                  ? 'bg-[#690005]/40 text-[#ffdad6] border-[#ffb4ab]/30'
+                  : isOrganizer
+                  ? user?.is_verified_organizer
+                    ? 'bg-[#ffb4ab]/10 text-[#ffb4ab] border-[#ffb4ab]/30'
+                    : 'bg-[#690005]/20 text-[#ffb4ab] border-[#ffb4ab]/30'
+                  : 'bg-[#2a2a2a] text-[#e6bdb8] border-[#353534]'
+              }`}>
+                {roleLabel}
+              </span>
+            </div>
 
             <div className="mt-6 w-full flex flex-col gap-2.5">
-              <button
-                onClick={onOpenCreateModal}
-                className="w-full bg-[#ffb4ab] text-[#690005] font-label-caps text-[12px] py-3 rounded-xl hover:scale-[1.02] transition-transform shadow-sm font-bold uppercase"
-              >
-                CREATE EVENT
-              </button>
+              {isOrganizer && (
+                <button
+                  onClick={onOpenCreateModal}
+                  className="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-[#fff6f5] font-label-caps text-[12px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-sm font-bold uppercase flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {user?.is_verified_organizer || isAdmin ? 'add' : 'verified_user'}
+                  </span>
+                  {user?.is_verified_organizer || isAdmin ? 'CREATE EVENT' : 'VERIFY & CREATE'}
+                </button>
+              )}
               <button
                 onClick={() => onNavigate('events')}
-                className="w-full bg-[#131313] text-[#e5e2e1] border border-[#ac8884] font-label-caps text-[12px] py-3 rounded-xl hover:bg-[#2a2a2a] transition-colors uppercase font-semibold"
+                className={`w-full font-label-caps text-[12px] py-3 rounded-xl transition-all uppercase font-semibold ${
+                  isOrganizer
+                    ? 'bg-[#131313] text-[#e5e2e1] border border-[#ac8884] hover:bg-[#2a2a2a]'
+                    : 'bg-[#ffb4ab] text-[#690005] hover:bg-[#ffdad6] font-bold shadow-md hover:scale-[1.02]'
+                }`}
               >
                 EXPLORE EVENTS
               </button>
@@ -51,47 +85,102 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate
               QUICK LINKS
             </h3>
             <nav className="flex flex-col gap-2">
-              <button
-                onClick={() => onNavigate('manage-event')}
-                className="flex items-center gap-3 text-[#e5e2e1] hover:text-[#ffb4ab] transition-colors py-2 text-left"
-              >
-                <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">hub</span>
-                <span className="font-body-md text-[14px]">Host Event Management</span>
-              </button>
+              {isOrganizer && (
+                <>
+                  <button
+                    onClick={() => onNavigate('manage-event')}
+                    className="flex items-center gap-3 text-[#e5e2e1] hover:text-[#ffb4ab] transition-colors py-2 text-left"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">hub</span>
+                    <span className="font-body-md text-[14px]">Host Event Management</span>
+                  </button>
+
+                  <button
+                    onClick={() => onNavigate('verification')}
+                    className="flex items-center gap-3 text-[#e5e2e1] hover:text-[#ffb4ab] transition-colors py-2 text-left"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">verified_user</span>
+                    <span className="font-body-md text-[14px]">
+                      {user?.is_verified_organizer ? 'Verification Status' : 'Verify ID to Publish'}
+                    </span>
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => onNavigate('events')}
                 className="flex items-center gap-3 text-[#e5e2e1] hover:text-[#ffb4ab] transition-colors py-2 text-left"
               >
                 <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">bookmarks</span>
-                <span className="font-body-md text-[14px]">Saved Events (3)</span>
+                <span className="font-body-md text-[14px]">Browse All Events</span>
               </button>
               <button
                 onClick={() => onNavigate('event-detail')}
                 className="flex items-center gap-3 text-[#e5e2e1] hover:text-[#ffb4ab] transition-colors py-2 text-left"
               >
                 <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">history</span>
-                <span className="font-body-md text-[14px]">Past Attended Events</span>
+                <span className="font-body-md text-[14px]">Featured Masterclass</span>
               </button>
-              <button
-                onClick={() => onNavigate('admin')}
-                className="flex items-center gap-3 text-[#e5e2e1] hover:text-[#ffb4ab] transition-colors py-2 text-left"
-              >
-                <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">settings</span>
-                <span className="font-body-md text-[14px]">System Preferences</span>
-              </button>
+              {isAdmin && (
+                <>
+                  <button
+                    onClick={() => onNavigate('admin-verifications')}
+                    className="flex items-center gap-3 text-[#ffb4ab] hover:text-[#ffdad6] transition-colors py-2 text-left"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">verified_user</span>
+                    <span className="font-body-md text-[14px] font-bold">Review Verifications</span>
+                  </button>
+                  <button
+                    onClick={() => onNavigate('admin')}
+                    className="flex items-center gap-3 text-[#ffb4ab] hover:text-[#ffdad6] transition-colors py-2 text-left"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">admin_panel_settings</span>
+                    <span className="font-body-md text-[14px] font-bold">Admin Portal</span>
+                  </button>
+                </>
+              )}
             </nav>
           </div>
         </aside>
 
         {/* Main Content Area */}
         <div className="w-full lg:w-3/4 flex flex-col gap-10">
+          {/* Unverified Organizer Alert Banner */}
+          {user?.role === 'organizer' && !user.is_verified_organizer && (
+            <div className="p-6 bg-[#201f1f] border border-[#ffb4ab]/40 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#ffb4ab]"></div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-[#ffb4ab]/10 border border-[#ffb4ab]/30 flex items-center justify-center text-[#ffb4ab] shrink-0">
+                  <span className="material-symbols-outlined text-[28px]">gpp_maybe</span>
+                </div>
+                <div>
+                  <h3 className="font-headline-md text-[18px] text-white font-bold">
+                    Identity Verification Required
+                  </h3>
+                  <p className="text-[13px] text-[#e6bdb8] mt-1 max-w-xl">
+                    To prevent fraudulent and fake events, organizers must verify their government ID
+                    before publishing events. You can submit your application in under 2 minutes.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => onNavigate('verification')}
+                className="bg-[#ffb4ab] hover:bg-[#ffdad6] text-[#690005] px-6 py-2.5 rounded-xl font-label-caps text-[12px] font-bold uppercase transition-all shadow-md shrink-0 flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">verified</span>
+                VERIFY NOW
+              </button>
+            </div>
+          )}
+
           {/* Welcome & Stats */}
           <section>
             <h1 className="font-headline-lg text-[32px] text-[#e5e2e1] mb-1 font-bold">
-              Good morning, Alex.
+              Welcome back, {displayName.split(' ')[0]}.
             </h1>
             <p className="font-body-lg text-[16px] text-[#e6bdb8] mb-6">
-              Here's a summary of your event activity.
+              {isOrganizer
+                ? 'Manage your hosted meetups and see community participation.'
+                : 'Discover exciting meetups and manage your RSVPs.'}
             </p>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ScreenType, AttendeeRecord } from '../../types/eventboard';
 import { hostManagedEvent } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 
 interface ManageEventViewProps {
   onNavigate: (screen: ScreenType) => void;
@@ -8,6 +9,7 @@ interface ManageEventViewProps {
 }
 
 export const ManageEventView: React.FC<ManageEventViewProps> = ({ onNavigate, onOpenCreateModal }) => {
+  const { isVerifiedOrganizer } = useAuth();
   const [activeTab, setActiveTab] = useState<'confirmed' | 'waitlist'>('confirmed');
   const [searchQuery, setSearchQuery] = useState('');
   const [attendees, setAttendees] = useState<AttendeeRecord[]>(hostManagedEvent.attendees);
@@ -32,6 +34,30 @@ export const ManageEventView: React.FC<ManageEventViewProps> = ({ onNavigate, on
 
   return (
     <div className="flex flex-col w-full px-5 lg:px-16 py-12 gap-10 max-w-[1280px] mx-auto min-h-screen">
+      {/* Verification Alert Banner if not verified */}
+      {!isVerifiedOrganizer && (
+        <div className="p-5 bg-[#201f1f] border border-[#ffb4ab]/50 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-[#ffb4ab] text-[28px]">
+              gpp_maybe
+            </span>
+            <div>
+              <p className="font-bold text-white text-[15px]">Identity Verification Required</p>
+              <p className="text-[13px] text-[#e6bdb8]">
+                Your organizer profile must be approved by administrators before new events can go live.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate('verification')}
+            className="bg-[#ffb4ab] hover:bg-[#ffdad6] text-[#690005] px-5 py-2 rounded-xl font-label-caps text-[12px] font-bold uppercase transition-all shadow-md shrink-0 flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-[16px]">verified</span>
+            SUBMIT ID VERIFICATION
+          </button>
+        </div>
+      )}
+
       {/* Header & Status Overview */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 w-full">
         <div className="flex flex-col gap-3">
