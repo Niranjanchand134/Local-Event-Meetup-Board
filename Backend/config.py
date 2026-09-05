@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     jwt_secret_key: str = "CHANGE_ME_IN_PROD"
     jwt_algorithm: str = "HS256"
 
+    # Local disk storage for uploaded verification documents.
+    upload_dir: str = "uploads/verifications"
+    max_upload_size_mb: int = 5
+
 
 @lru_cache
 def get_settings() -> Settings:
