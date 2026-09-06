@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
 from models import User
-from routers import auth, users, verifications
+from routers import auth, users, verifications, admin_users
 
 app = FastAPI(title="Local Event & Meetup Board API")
 
@@ -31,3 +31,4 @@ async def on_startup():
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(verifications.router)
+app.include_router(admin_users.router)

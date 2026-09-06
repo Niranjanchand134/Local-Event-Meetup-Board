@@ -15,7 +15,6 @@ async def get_me(current_user: User = Depends(get_current_user)):
 async def operator_check(current_user: User = Depends(require_organizer)):
     return current_user
 
-
 @router.get("/me/admin-check", response_model=UserMeResponse)
 async def admin_check(current_user: User = Depends(require_admin)):
     return current_user
