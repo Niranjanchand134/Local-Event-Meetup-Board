@@ -116,7 +116,10 @@ export interface AdminUserRecord {
   email: string;
   avatar?: string;
   role: 'ADMIN' | 'ORGANIZER' | 'USER';
-  eventsCreated: number;
-  eventsJoined: number;
+  events_created?: number;
+  events_joined?: number;
+  eventsCreated?: number;
+  eventsJoined?: number;
   status: 'ACTIVE' | 'SUSPENDED';
+  created_at?: string;
 }
