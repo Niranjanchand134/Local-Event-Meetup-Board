@@ -26,7 +26,6 @@ export const OrganizerVerificationView: React.FC<OrganizerVerificationViewProps>
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const NAME_PATTERN = /^[A-Za-z\s.'-]+$/;
-  const DOCUMENT_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
   const MIN_BIRTH_YEAR = 1900;
   const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
   const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];

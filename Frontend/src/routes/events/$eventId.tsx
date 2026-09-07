@@ -7,10 +7,7 @@ export const Route = createFileRoute('/events/$eventId')({
 });
 
 function RouteComponent() {
-  // The original design always renders the single featured masterclass event
-  // regardless of which card was clicked (mock data only has one detailed
-  // event). The $eventId param is preserved in the URL for a real API to key
-  // off in the future, but the view itself is unchanged.
+  const { eventId } = Route.useParams();
   const onNavigate = useScreenNavigate();
-  return <EventDetailView onNavigate={onNavigate} />;
+  return <EventDetailView eventId={eventId} onNavigate={onNavigate} />;
 }

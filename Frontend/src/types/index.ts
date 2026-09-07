@@ -2,6 +2,67 @@ export type UserRole = "user" | "organizer" | "admin";
 export type EventStatus = "upcoming" | "completed" | "cancelled";
 export type RsvpStatus = "confirmed" | "waitlisted" | "cancelled";
 
+export type EventCategory =
+  | "garage_sale"
+  | "free_tutoring"
+  | "community_class"
+  | "park_cleanup"
+  | "study_group"
+  | "workshop"
+  | "other";
+
+export interface CategoryOption {
+  value: EventCategory;
+  label: string;
+  icon: string;
+  description: string;
+}
+
+export const EVENT_CATEGORIES: CategoryOption[] = [
+  {
+    value: "workshop",
+    label: "Workshop & Hands-on",
+    icon: "code",
+    description: "Interactive skill-building and technical workshops",
+  },
+  {
+    value: "community_class",
+    label: "Community Class",
+    icon: "school",
+    description: "Open community lessons and educational sessions",
+  },
+  {
+    value: "study_group",
+    label: "Study Group",
+    icon: "menu_book",
+    description: "Collaborative learning, exam prep, and research",
+  },
+  {
+    value: "free_tutoring",
+    label: "Free Tutoring",
+    icon: "volunteer_activism",
+    description: "Pro-bono mentoring and academic support",
+  },
+  {
+    value: "park_cleanup",
+    label: "Park & Neighborhood Cleanup",
+    icon: "eco",
+    description: "Environmental action and neighborhood beautification",
+  },
+  {
+    value: "garage_sale",
+    label: "Garage Sale & Swap",
+    icon: "storefront",
+    description: "Neighborhood sales, secondhand swaps, and markets",
+  },
+  {
+    value: "other",
+    label: "Other Community Meetup",
+    icon: "groups",
+    description: "General social gatherings and cultural meetups",
+  },
+];
+
 export interface User {
   id: string;
   name: string;
@@ -17,6 +78,82 @@ export interface AuthUser {
   requested_role: string;
   is_suspended: boolean;
   is_verified_organizer: boolean;
+}
+
+export interface ScheduleItemIn {
+  item_time: string; // ISO 8601 string
+  title: string;
+  description?: string | null;
+  sort_order?: number;
+}
+
+export interface ScheduleItemOut {
+  id: string;
+  item_time: string;
+  title: string;
+  description?: string | null;
+  sort_order: number;
+}
+
+export interface EventCreatePayload {
+  title: string;
+  description: string;
+  category: EventCategory;
+  start_time: string; // ISO 8601
+  end_time?: string | null;
+  venue_name?: string | null;
+  address?: string | null;
+  city?: string | null;
+  is_online: boolean;
+  meeting_link?: string | null;
+  is_paid: boolean;
+  price?: number | null;
+  currency?: string;
+  max_attendees?: number | null;
+  schedule_items?: ScheduleItemIn[];
+}
+
+export interface EventUpdatePayload {
+  title?: string;
+  description?: string;
+  category?: EventCategory;
+  start_time?: string;
+  end_time?: string | null;
+  venue_name?: string | null;
+  address?: string | null;
+  city?: string | null;
+  is_online?: boolean;
+  meeting_link?: string | null;
+  is_paid?: boolean;
+  price?: number | null;
+  currency?: string;
+  max_attendees?: number | null;
+  status?: EventStatus;
+}
+
+export interface EventOut {
+  id: string;
+  title: string;
+  description: string;
+  category: EventCategory;
+  start_time: string;
+  end_time?: string | null;
+  venue_name?: string | null;
+  address?: string | null;
+  city?: string | null;
+  is_online: boolean;
+  meeting_link?: string | null;
+  is_paid: boolean;
+  price?: number | null;
+  currency: string;
+  max_attendees?: number | null;
+  confirmed_count: number;
+  spots_left?: number | null;
+  cover_image_path?: string | null;
+  created_by: string;
+  status: EventStatus;
+  created_at: string;
+  schedule_items: ScheduleItemOut[];
 }
 
 export interface Category {

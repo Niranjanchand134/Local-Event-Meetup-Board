@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
-import type { ScreenType, EventItem } from '../../types/eventboard';
-import { sampleEvents } from '../../data/mockData';
+import { useQuery } from '@tanstack/react-query';
+import type { ScreenType } from '../../types/eventboard';
 import { useAuth } from '../../context/AuthContext';
+import { eventsApi } from '../../lib/eventsApi';
+import {
+  getEventImageUrl,
+  formatEventDateShort,
+  formatEventTime,
+  getEventLocationLabel,
+  getEventBadge,
+  CATEGORY_LABEL_MAP,
+} from '../../lib/eventDisplay';
 
 interface DiscoverViewProps {
   onNavigate: (screen: ScreenType, eventId?: string) => void;
@@ -14,7 +23,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
     eventsHosted: 10452,
     activeMembers: 25890,
     communities: 156,
-    citiesActive: 52
+    citiesActive: 52,
+  });
+
+  // Query featured events from FastAPI backend
+  const { data: featuredEvents = [], isLoading } = useQuery({
+    queryKey: ['events', 'featured'],
+    queryFn: () => eventsApi.getEvents({ limit: 6 }),
   });
 
   return (
@@ -33,12 +48,12 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
         {/* Floating Event Node Visualizations */}
         <div className="relative w-full max-w-[1280px] h-full pointer-events-none">
           <div 
-            onClick={() => onNavigate('event-detail')}
+            onClick={() => onNavigate('events')}
             className="absolute top-1/4 left-[15%] hidden md:block pointer-events-auto cursor-pointer transition-transform hover:scale-105"
           >
             <div className="bg-[#131313] border border-[#5c403c] p-4 rounded shadow-2xl relative backdrop-blur-md">
               <span className="font-label-caps text-label-caps text-[#ffb4ab] block mb-2">TECH MEETUP</span>
-              <span className="font-headline-md text-[18px] text-[#e5e2e1] block mb-1">React NYC</span>
+              <span className="font-headline-md text-[18px] text-[#e5e2e1] block mb-1">Local Tech Circles</span>
               <div className="flex -space-x-2 mt-3">
                 <div className="w-6 h-6 rounded-full bg-[#697382] border border-[#131313]"></div>
                 <div className="w-6 h-6 rounded-full bg-[#dc2626] border border-[#131313]"></div>
@@ -52,8 +67,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             className="absolute top-1/3 right-[10%] hidden md:block pointer-events-auto cursor-pointer transition-transform hover:scale-105"
           >
             <div className="bg-[#131313] border border-[#5c403c] p-4 rounded shadow-2xl relative backdrop-blur-md">
-              <span className="font-label-caps text-label-caps text-[#ffb4ab] block mb-2">DESIGN WORKSHOP</span>
-              <span className="font-headline-md text-[18px] text-[#e5e2e1] block mb-1">Figma Config Watch</span>
+              <span className="font-label-caps text-label-caps text-[#ffb4ab] block mb-2">COMMUNITY WORKSHOP</span>
+              <span className="font-headline-md text-[18px] text-[#e5e2e1] block mb-1">Open Learning Sessions</span>
               <div className="flex -space-x-2 mt-3">
                 <div className="w-6 h-6 rounded-full bg-[#454747] border border-[#131313]"></div>
                 <div className="w-6 h-6 rounded-full bg-[#bdc7d8] border border-[#131313]"></div>
@@ -123,91 +138,106 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
         </div>
 
         {/* Featured Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sampleEvents.slice(0, 3).map((event: EventItem) => {
-            const dateParts = event.date.split(' ');
-            const day = dateParts[1]?.replace(',', '') || '24';
-            const month = dateParts[0] || 'OCT';
+        {isLoading ? (
+          <div className="py-12 flex justify-center">
+            <span className="material-symbols-outlined animate-spin text-[36px] text-[#ffb4ab]">
+              progress_activity
+            </span>
+          </div>
+        ) : featuredEvents.length === 0 ? (
+          <div className="py-12 px-6 text-center bg-[#1c1b1b] border border-[#353534] rounded-2xl max-w-lg mx-auto">
+            <span className="material-symbols-outlined text-[36px] text-[#ffb4ab] mb-3">event_available</span>
+            <h3 className="text-white font-bold text-[18px] mb-1">No Active Events</h3>
+            <p className="text-[#e6bdb8] text-[13px] mb-4">Be the first organizer to publish a community meetup.</p>
+            <button
+              onClick={onOpenCreateModal}
+              className="bg-[#ffb4ab] hover:bg-[#ffdad6] text-[#690005] px-5 py-2.5 rounded-xl font-label-caps text-[11px] font-bold uppercase transition-all"
+            >
+              HOST AN EVENT
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredEvents.slice(0, 3).map((event) => {
+              const { day, month } = formatEventDateShort(event.start_time);
+              const timeStr = formatEventTime(event.start_time, event.end_time);
+              const locationStr = getEventLocationLabel(event);
+              const imageUrl = getEventImageUrl(event);
+              const badge = getEventBadge(event);
+              const categoryLabel = CATEGORY_LABEL_MAP[event.category] || event.category;
 
-            return (
-              <article
-                key={event.id}
-                onClick={() => onNavigate('event-detail', event.id)}
-                className="group bg-[#1c1b1b] border border-[#353534] hover:border-[#ffb4ab] transition-all duration-300 rounded-xl overflow-hidden flex flex-col shadow-sm hover:shadow-xl hover:shadow-[#ffb4ab]/5 hover:-translate-y-1 cursor-pointer"
-              >
-                <div className="relative h-48 w-full overflow-hidden bg-[#2a2a2a]">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                    style={{ backgroundImage: `url('${event.image}')` }}
-                  ></div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1c1b1b] via-transparent to-transparent"></div>
-                  
-                  <div className="absolute top-4 left-4 bg-[#131313]/90 backdrop-blur-sm border border-[#5c403c] px-3 py-1 rounded">
-                    <span className="font-label-caps text-[10px] text-[#ffb4ab] font-bold">
-                      {event.categoryLabel}
-                    </span>
+              return (
+                <article
+                  key={event.id}
+                  onClick={() => onNavigate('event-detail', event.id)}
+                  className="group bg-[#1c1b1b] border border-[#353534] hover:border-[#ffb4ab] transition-all duration-300 rounded-xl overflow-hidden flex flex-col shadow-sm hover:shadow-xl hover:shadow-[#ffb4ab]/5 hover:-translate-y-1 cursor-pointer"
+                >
+                  <div className="relative h-48 w-full overflow-hidden bg-[#2a2a2a]">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                      style={{ backgroundImage: `url('${imageUrl}')` }}
+                    ></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1c1b1b] via-transparent to-transparent"></div>
+                    
+                    <div className="absolute top-4 left-4 bg-[#131313]/90 backdrop-blur-sm border border-[#5c403c] px-3 py-1 rounded">
+                      <span className="font-label-caps text-[10px] text-[#ffb4ab] font-bold">
+                        {categoryLabel.toUpperCase()}
+                      </span>
+                    </div>
+
+                    {badge.label && (
+                      <div className="absolute top-4 right-4 bg-[#131313]/90 backdrop-blur-sm border border-[#5c403c] px-3 py-1 rounded flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#ffb4ab] animate-pulse"></span>
+                        <span className="font-data-mono text-[10px] text-[#e5e2e1]">{badge.label}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {event.badge && (
-                    <div className="absolute top-4 right-4 bg-[#131313]/90 backdrop-blur-sm border border-[#5c403c] px-3 py-1 rounded flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#ffb4ab] animate-pulse"></span>
-                      <span className="font-data-mono text-[10px] text-[#e5e2e1]">{event.badge}</span>
+                  <div className="p-6 flex flex-col flex-grow relative">
+                    {/* Date badge */}
+                    <div className="absolute -top-6 right-6 w-12 h-12 bg-[#ffb4ab] flex flex-col items-center justify-center rounded shadow-md border-2 border-[#1c1b1b]">
+                      <span className="font-headline-md text-[16px] text-[#690005] font-bold leading-none">{day}</span>
+                      <span className="font-label-caps text-[10px] text-[#690005]/80 font-bold">{month}</span>
                     </div>
-                  )}
-                </div>
 
-                <div className="p-6 flex flex-col flex-grow relative">
-                  {/* Date badge */}
-                  <div className="absolute -top-6 right-6 w-12 h-12 bg-[#ffb4ab] flex flex-col items-center justify-center rounded shadow-md border-2 border-[#1c1b1b]">
-                    <span className="font-headline-md text-[16px] text-[#690005] font-bold leading-none">{day}</span>
-                    <span className="font-label-caps text-[10px] text-[#690005]/80 font-bold">{month}</span>
-                  </div>
+                    <h3 className="font-headline-md text-[19px] text-[#e5e2e1] mb-2 mt-2 group-hover:text-[#ffb4ab] transition-colors line-clamp-1">
+                      {event.title}
+                    </h3>
 
-                  <h3 className="font-headline-md text-[19px] text-[#e5e2e1] mb-2 mt-2 group-hover:text-[#ffb4ab] transition-colors line-clamp-1">
-                    {event.title}
-                  </h3>
+                    <p className="font-body-md text-[14px] text-[#e6bdb8] mb-6 line-clamp-2 leading-relaxed">
+                      {event.description}
+                    </p>
 
-                  <p className="font-body-md text-[14px] text-[#e6bdb8] mb-6 line-clamp-2 leading-relaxed">
-                    {event.description}
-                  </p>
-
-                  <div className="mt-auto space-y-2 text-[13px]">
-                    <div className="flex items-center gap-2 text-[#e6bdb8]">
-                      <span className="material-symbols-outlined text-[16px] text-[#ac8884]">location_on</span>
-                      <span className="font-data-mono truncate">{event.venueName}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[#e6bdb8]">
-                      <span className="material-symbols-outlined text-[16px] text-[#ac8884]">schedule</span>
-                      <span className="font-data-mono">{event.time}</span>
-                    </div>
-                  </div>
-
-                  <div className="w-full h-px bg-[#353534] my-4"></div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex -space-x-2">
-                      {event.attendees.map((att, i) => (
-                        <img
-                          key={i}
-                          src={att.avatar}
-                          alt={att.name}
-                          className="w-8 h-8 rounded-full border border-[#1c1b1b] object-cover"
-                        />
-                      ))}
-                      <div className="w-8 h-8 rounded-full bg-[#353534] border border-[#1c1b1b] flex items-center justify-center">
-                        <span className="font-data-mono text-[10px] text-[#e6bdb8]">+{event.registeredCount}</span>
+                    <div className="mt-auto space-y-2 text-[13px]">
+                      <div className="flex items-center gap-2 text-[#e6bdb8]">
+                        <span className="material-symbols-outlined text-[16px] text-[#ac8884]">
+                          {event.is_online ? 'language' : 'location_on'}
+                        </span>
+                        <span className="font-data-mono truncate">{locationStr}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#e6bdb8]">
+                        <span className="material-symbols-outlined text-[16px] text-[#ac8884]">schedule</span>
+                        <span className="font-data-mono">{timeStr}</span>
                       </div>
                     </div>
 
-                    <span className="font-label-caps text-[12px] text-[#ffb4ab] group-hover:underline">
-                      RSVP →
-                    </span>
+                    <div className="w-full h-px bg-[#353534] my-4"></div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="font-data-mono text-[12px] text-[#e6bdb8]">
+                        {event.is_paid ? `${event.currency} ${event.price}` : 'Free'} • {event.confirmed_count} going
+                      </span>
+
+                      <span className="font-label-caps text-[12px] text-[#ffb4ab] group-hover:underline">
+                        RSVP →
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Technical Divider */}
@@ -268,11 +298,11 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
       <section className="max-w-[1280px] mx-auto w-full px-5 lg:px-16 py-20">
         <div className="flex flex-col mb-12">
           <span className="font-data-mono text-data-mono text-[#ffb4ab] mb-2 block">// 02 / CATEGORIES</span>
-          <h2 className="font-headline-lg text-headline-lg text-[#e5e2e1]">Explore Subcultures</h2>
+          <h2 className="font-headline-lg text-headline-lg text-[#e5e2e1]">Explore Categories</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-[repeat(2,200px)] gap-4">
-          {/* Large Panel: Technology */}
+          {/* Large Panel: Workshops */}
           <div
             onClick={() => onNavigate('events')}
             className="group md:col-span-2 md:row-span-2 relative rounded-xl overflow-hidden flex items-end p-8 border border-[#353534] hover:border-[#ffb4ab] transition-all cursor-pointer bg-[#1c1b1b]"
@@ -280,7 +310,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             <div
               className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-60"
               style={{
-                backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuBrnvNXXS84LG6Jjr7-_0zIoENHmB8JLuy9KAUq2tDvYGDyT0ngvlmZRgFlufMlZGBuduA7SMS_w0xlFBER2V-wQDKlEgCCpXv0PGGYFU8UIaLO9AYusH6Z-kD1uJjXpIVxD1GXPgcGpmFYSH8CdzJ5mDoOSEIqVn8ebjwqiyIOnY3C8JDuyIHYKexftFmWZUWLH6HW3ZXhoxoMwqcRqs_I3flReVuGoEaOOjFwYfOh4R-BD4kR1vg')`
+                backgroundImage: `url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80')`
               }}
             ></div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] via-[#131313]/50 to-transparent"></div>
@@ -289,10 +319,10 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
               <div className="flex justify-between items-center w-full">
                 <div>
                   <h3 className="font-headline-lg text-[28px] text-[#e5e2e1] group-hover:text-[#ffb4ab] transition-colors">
-                    Technology
+                    Workshops &amp; Hands-on
                   </h3>
                   <span className="font-data-mono text-[13px] text-[#e6bdb8] block mt-1">
-                    1,204 upcoming sessions
+                    Interactive technical &amp; skill-building sessions
                   </span>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-[#131313]/70 backdrop-blur border border-[#353534] flex items-center justify-center group-hover:bg-[#ffb4ab] transition-colors">
@@ -304,7 +334,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             </div>
           </div>
 
-          {/* Small Panel 1: Art & Design */}
+          {/* Small Panel 1: Community Classes */}
           <div
             onClick={() => onNavigate('events')}
             className="group md:col-span-2 md:row-span-1 relative rounded-xl overflow-hidden flex items-end p-6 border border-[#353534] hover:border-[#ffb4ab] transition-all cursor-pointer bg-[#1c1b1b]"
@@ -312,7 +342,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             <div
               className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-50"
               style={{
-                backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuCxe6et3aAOlVNq9QruZsdhWIntAHM-TD8jwM3IELDudgMtgs_KUaDOCQEe3HNZuX8OS-klU8_wO_vmsZ-wzfsrxxHfkWqhi--G63ps1dBa46bfVkPjo2Iu7tsk2YUDfE5JQuuTNEPmGJViaFzBFIXufMV9tjq4bv2_9TIBVdOzjBgpqvqFVl85bKZLbyamGD6nu4qpPDl1bzXHLuSdwtf4O7yyvPphD-WEf-ShcYIj1J4epwGt9cU')`
+                backgroundImage: `url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80')`
               }}
             ></div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] to-transparent"></div>
@@ -320,10 +350,10 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             <div className="relative z-10 w-full flex justify-between items-end">
               <div>
                 <h3 className="font-headline-md text-[20px] text-[#e5e2e1] group-hover:text-[#ffb4ab] transition-colors">
-                  Art &amp; Design
+                  Community Classes
                 </h3>
                 <span className="font-data-mono text-[12px] text-[#e6bdb8] block mt-1">
-                  456 upcoming events
+                  Open community lessons &amp; classes
                 </span>
               </div>
               <span className="material-symbols-outlined text-[#e6bdb8] group-hover:text-[#ffb4ab] transition-colors">
@@ -332,34 +362,34 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onNavigate, onOpenCr
             </div>
           </div>
 
-          {/* Small Panel 2: Business */}
+          {/* Small Panel 2: Study Groups */}
           <div
             onClick={() => onNavigate('events')}
             className="group md:col-span-1 md:row-span-1 relative rounded-xl overflow-hidden flex items-end p-6 border border-[#353534] hover:border-[#ffb4ab] transition-all bg-[#201f1f] cursor-pointer"
           >
             <div className="relative z-10 w-full flex flex-col justify-between h-full">
-              <span className="material-symbols-outlined text-[32px] text-[#ffb4ab] mb-auto">bar_chart</span>
+              <span className="material-symbols-outlined text-[32px] text-[#ffb4ab] mb-auto">menu_book</span>
               <div>
                 <h3 className="font-headline-md text-[18px] text-[#e5e2e1] group-hover:text-[#ffb4ab] transition-colors">
-                  Business
+                  Study Groups
                 </h3>
-                <span className="font-data-mono text-[12px] text-[#e6bdb8] block mt-1">892 events</span>
+                <span className="font-data-mono text-[12px] text-[#e6bdb8] block mt-1">Collaborative learning</span>
               </div>
             </div>
           </div>
 
-          {/* Small Panel 3: Music */}
+          {/* Small Panel 3: Park Cleanup */}
           <div
             onClick={() => onNavigate('events')}
             className="group md:col-span-1 md:row-span-1 relative rounded-xl overflow-hidden flex items-end p-6 border border-[#353534] hover:border-[#ffb4ab] transition-all bg-[#201f1f] cursor-pointer"
           >
             <div className="relative z-10 w-full flex flex-col justify-between h-full">
-              <span className="material-symbols-outlined text-[32px] text-[#ffb4ab] mb-auto">headphones</span>
+              <span className="material-symbols-outlined text-[32px] text-[#ffb4ab] mb-auto">eco</span>
               <div>
                 <h3 className="font-headline-md text-[18px] text-[#e5e2e1] group-hover:text-[#ffb4ab] transition-colors">
-                  Music
+                  Neighborhood Action
                 </h3>
-                <span className="font-data-mono text-[12px] text-[#e6bdb8] block mt-1">324 events</span>
+                <span className="font-data-mono text-[12px] text-[#e6bdb8] block mt-1">Cleanups &amp; eco projects</span>
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ export type ScreenType =
   | 'manage-event' 
   | 'verification'
   | 'admin' 
+  | 'admin-events' 
   | 'admin-users' 
   | 'admin-reports' 
   | 'admin-verifications'

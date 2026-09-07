@@ -1,14 +1,6 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import type { ScreenType } from '../types/eventboard';
-import { featuredMasterclass } from '../data/mockData';
 
-/**
- * The original EventBoard design was a single-page app that switched between
- * in-memory "screens" via useState. The new app uses real TanStack Router
- * routes, so this adapter maps the old ScreenType navigation calls used
- * throughout the copied components/views onto real URLs - without requiring
- * any changes to those components' markup or props.
- */
 const screenToPath = (screen: ScreenType, eventId?: string): string => {
   switch (screen) {
     case 'home':
@@ -16,7 +8,7 @@ const screenToPath = (screen: ScreenType, eventId?: string): string => {
     case 'events':
       return '/events';
     case 'event-detail':
-      return `/events/${eventId ?? featuredMasterclass.id}`;
+      return eventId ? `/events/${eventId}` : '/events';
     case 'dashboard':
       return '/dashboard';
     case 'manage-event':
@@ -25,6 +17,8 @@ const screenToPath = (screen: ScreenType, eventId?: string): string => {
       return '/verification';
     case 'admin':
       return '/admin';
+    case 'admin-events':
+      return '/admin/events';
     case 'admin-users':
       return '/admin/users';
     case 'admin-reports':
@@ -49,6 +43,7 @@ const pathToScreen = (pathname: string): ScreenType => {
   if (pathname === '/verification') return 'verification';
   if (pathname === '/admin/verifications') return 'admin-verifications';
   if (pathname === '/admin/reports') return 'admin-reports';
+  if (pathname === '/admin/events') return 'admin-events';
   if (pathname === '/admin/users') return 'admin-users';
   if (pathname === '/admin') return 'admin';
   if (pathname === '/login') return 'login';

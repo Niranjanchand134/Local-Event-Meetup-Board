@@ -329,7 +329,7 @@ export const AdminUsersView: React.FC<AdminUsersViewProps> = ({ onNavigate }) =>
               </tbody>
             ) : (
               <tbody className="divide-y divide-[#353534]">
-                {filtered.map((u, idx) => (
+                {filtered.map((u) => (
                   <tr key={u.id} className="hover:bg-[#2a2a2a]/40 transition-colors">
                     {/* Index */}
                     <td className="px-4 py-4 text-center">

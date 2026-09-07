@@ -43,7 +43,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentScreen, onNav
         </button>
 
         <button
-          className="w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase text-[#e6bdb8] hover:bg-[#2a2a2a] hover:text-[#e5e2e1] transition-all"
+          onClick={() => onNavigate('admin-events')}
+          className={`w-full flex items-center px-4 py-3 rounded text-[13px] font-label-caps uppercase transition-all ${
+            currentScreen === 'admin-events'
+              ? 'bg-[#dc2626] text-[#fff6f5] font-bold shadow-md'
+              : 'text-[#e6bdb8] hover:bg-[#2a2a2a] hover:text-[#e5e2e1]'
+          }`}
         >
           <span className="material-symbols-outlined mr-3 text-[20px]">event</span>
           Events

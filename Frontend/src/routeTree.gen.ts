@@ -16,6 +16,7 @@ import { Route as ManageEventRouteImport } from './routes/manage-event'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminVerificationsRouteImport } from './routes/admin/verifications'
@@ -57,6 +58,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEventsRoute = AdminEventsRouteImport.update({
+  id: '/admin/events',
+  path: '/admin/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
   id: '/admin/reports',
   path: '/admin/reports',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
+  '/admin/events': typeof AdminEventsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verifications': typeof AdminVerificationsRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
+  '/admin/events': typeof AdminEventsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verifications': typeof AdminVerificationsRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/manage-event': typeof ManageEventRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
+  '/admin/events': typeof AdminEventsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verifications': typeof AdminVerificationsRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/manage-event'
     | '/signup'
     | '/verification'
+    | '/admin/events'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/verifications'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/manage-event'
     | '/signup'
     | '/verification'
+    | '/admin/events'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/verifications'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/manage-event'
     | '/signup'
     | '/verification'
+    | '/admin/events'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/verifications'
@@ -178,6 +190,7 @@ export interface RootRouteChildren {
   ManageEventRoute: typeof ManageEventRoute
   SignupRoute: typeof SignupRoute
   VerificationRoute: typeof VerificationRoute
+  AdminEventsRoute: typeof AdminEventsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVerificationsRoute: typeof AdminVerificationsRoute
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/events': {
+      id: '/admin/events'
+      path: '/admin/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/reports': {
       id: '/admin/reports'
       path: '/admin/reports'
@@ -282,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManageEventRoute: ManageEventRoute,
   SignupRoute: SignupRoute,
   VerificationRoute: VerificationRoute,
+  AdminEventsRoute: AdminEventsRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVerificationsRoute: AdminVerificationsRoute,

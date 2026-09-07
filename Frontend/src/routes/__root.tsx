@@ -1,5 +1,6 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -17,6 +18,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const currentScreen = useCurrentScreen();
   const onNavigate = useScreenNavigate();
+  const queryClient = useQueryClient();
   const { isVerifiedOrganizer, isOrganizer, isAuthenticated } = useAuth();
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -38,6 +40,7 @@ function RootLayout() {
 
   const isAdminScreen =
     currentScreen === 'admin' ||
+    currentScreen === 'admin-events' ||
     currentScreen === 'admin-users' ||
     currentScreen === 'admin-reports' ||
     currentScreen === 'admin-verifications';
@@ -54,8 +57,11 @@ function RootLayout() {
         <CreateEventModal
           isOpen={createModalOpen}
           onClose={() => setCreateModalOpen(false)}
-          onEventCreated={(eventData) => {
-            console.log('Event published:', eventData);
+          onOpenVerification={() => setVerificationModalOpen(true)}
+          onEventCreated={(event) => {
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['my-events'] });
+            console.log('Event published to backend:', event);
           }}
         />
 
@@ -65,6 +71,7 @@ function RootLayout() {
           onClose={() => setVerificationModalOpen(false)}
           onSuccess={() => {
             console.log('Verification submitted');
+            queryClient.invalidateQueries({ queryKey: ['my-events'] });
           }}
         />
 
