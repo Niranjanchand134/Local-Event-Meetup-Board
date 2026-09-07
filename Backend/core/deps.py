@@ -46,3 +46,20 @@ def require_organizer(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != UserRole.organizer:
         raise HTTPException(403, "Organizer access required")
     return current_user
+
+def require_verified_organizer(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Gates event creation specifically. An organizer who hasn't been
+    approved through the verification workflow can log in and see their
+    dashboard, but cannot create an event until is_verified_organizer
+    is true — this is the actual anti-scam gate from the original goal.
+    """
+    if current_user.role != UserRole.organizer:
+        raise HTTPException(403, "Organizer access required")
+    if not current_user.is_verified_organizer:
+        raise HTTPException(
+            403,
+            "Your organizer account must be verified before you can create events. "
+            "Submit a verification application from your dashboard.",
+        )
+    return current_user
