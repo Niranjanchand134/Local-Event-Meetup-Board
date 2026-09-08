@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ScreenType } from '../../types/eventboard';
 import { useAuth } from '../../context/AuthContext';
 import { eventsApi } from '../../lib/eventsApi';
-import type { EventOut, EventCategory } from '../../types';
+import { rsvpApi } from '../../lib/rsvpApi';
+import type { EventOut, EventCategory, RsvpWithPayment } from '../../types';
 import {
   getEventImageUrl,
   formatEventDate,
@@ -41,6 +42,24 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate
     queryKey: ['my-events', 'dashboard'],
     queryFn: () => eventsApi.getMyCreatedEvents(),
     enabled: !!isOrganizer,
+  });
+
+  const queryClient = useQueryClient();
+
+  // 3. For normal users — fetch their reservations
+  const isNormalUser = !isOrganizer && !isAdmin;
+  const { data: myReservations = [], isLoading: rsvpsLoading } = useQuery<RsvpWithPayment[]>({
+    queryKey: ['my-reservations'],
+    queryFn: () => rsvpApi.getMyReservations(),
+    enabled: isNormalUser,
+  });
+
+  const cancelRsvpMutation = useMutation({
+    mutationFn: (rsvpId: string) => rsvpApi.cancelRsvp(rsvpId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-reservations'] });
+      queryClient.invalidateQueries({ queryKey: ['events', 'dashboard-all'] });
+    },
   });
 
   // Defensive: If user is somehow not authenticated, do not show dashboard
@@ -571,6 +590,175 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate
               </div>
             )}
           </section>
+
+          {/* MY RESERVATIONS & TICKETS (For Normal Users) */}
+          {isNormalUser && (
+            <section className="mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#ffb4ab] text-[20px]">confirmation_number</span>
+                  <h2 className="font-headline-md text-[20px] text-[#e5e2e1] font-bold">
+                    My Reserved Spots & Tickets
+                  </h2>
+                </div>
+                <span className="text-[12px] font-data-mono text-[#ac8884]">
+                  {myReservations.length} total
+                </span>
+              </div>
+
+              {rsvpsLoading ? (
+                <div className="bg-[#201f1f] rounded-2xl p-8 text-center border border-[#353534] text-[#c6c6c7] font-data-mono text-[13px] flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined animate-spin text-[18px] text-[#ffb4ab]">progress_activity</span>
+                  Loading your reservations...
+                </div>
+              ) : myReservations.length > 0 ? (
+                <div className="space-y-3">
+                  {myReservations.map((item) => {
+                    if (!item) return null;
+
+                    const evt = allEvents.find((e) => e.id === item.event_id);
+                    const isPaid = !!item.payment;
+                    const isPending = item.status === 'pending_payment';
+                    const isConfirmed = item.status === 'confirmed';
+                    const qty = item.quantity ?? 1;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`bg-[#201f1f] border rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
+                          isPending
+                            ? 'border-orange-500/30 hover:border-orange-500/50'
+                            : 'border-[#353534] hover:border-[#5c403c]'
+                        }`}
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {/* RSVP Status Badge */}
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase border ${
+                                isConfirmed
+                                  ? 'bg-[#1b4332] text-[#74c69d] border-[#2d6a4f]'
+                                  : isPending
+                                  ? 'bg-[#4a3b00] text-[#ffd166] border-[#705500]'
+                                  : 'bg-[#3b1219] text-[#ffb4ab] border-[#690005]'
+                              }`}
+                            >
+                              {isPending ? '⏳ PAYMENT PENDING' : item.status.replace('_', ' ')}
+                            </span>
+
+                            {/* Ticket quantity badge */}
+                            {qty > 1 && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#ffb4ab]/10 text-[#ffb4ab] border border-[#ffb4ab]/20 flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[11px]">confirmation_number</span>
+                                {qty} TICKETS
+                              </span>
+                            )}
+
+                            {/* Payment Badge if applicable */}
+                            {isPaid && item.payment && (
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase flex items-center gap-1 ${
+                                  item.payment.gateway === 'esewa'
+                                    ? 'bg-[#103b22] text-[#60d394] border border-[#1e6f42]'
+                                    : 'bg-[#2b194d] text-[#b388ff] border border-[#512da8]'
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[11px]">payments</span>
+                                {item.payment.gateway.toUpperCase()} • {item.payment.currency} {item.payment.amount} ({item.payment.status})
+                              </span>
+                            )}
+
+                            {!isPaid && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#2a2a2a] text-[#c6c6c7] border border-[#3a3a3a]">
+                                Free Spot
+                              </span>
+                            )}
+                          </div>
+
+                          <h3
+                            onClick={() => onNavigate('event-detail', item.event_id)}
+                            className="font-headline-sm text-[16px] font-bold text-[#e5e2e1] hover:text-[#ffb4ab] cursor-pointer transition-colors"
+                          >
+                            {evt?.title || 'Meetup Event'}
+                          </h3>
+
+                          <div className="flex items-center gap-4 text-[12px] text-[#c6c6c7] font-data-mono mt-1">
+                            {evt && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[13px] text-[#ffb4ab]">calendar_today</span>
+                                {new Date(evt.start_time).toLocaleDateString()}
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[13px] text-[#ac8884]">schedule</span>
+                              Reserved: {new Date(item.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          {/* Pending payment note */}
+                          {isPending && (
+                            <p className="font-data-mono text-[11px] text-orange-400/80 mt-1.5">
+                              Payment incomplete — go to the event page to retry payment.
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 self-end md:self-center flex-wrap justify-end">
+                          {/* Complete Payment button for pending RSVPs */}
+                          {isPending && (
+                            <button
+                              onClick={() => onNavigate('event-detail', item.event_id)}
+                              className="px-3.5 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/40 rounded-xl text-[12px] font-label-caps font-bold transition-colors flex items-center gap-1"
+                            >
+                              <span className="material-symbols-outlined text-[13px]">payments</span>
+                              COMPLETE PAYMENT
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => onNavigate('event-detail', item.event_id)}
+                            className="px-3.5 py-1.5 bg-[#2a2a2a] hover:bg-[#353534] text-[#e5e2e1] rounded-xl text-[12px] font-label-caps font-bold transition-colors"
+                          >
+                            View Event
+                          </button>
+
+                          {/* Cancel — allowed for both confirmed and pending */}
+                          {(isConfirmed || isPending) && (
+                            <button
+                              onClick={() => {
+                                const msg = isPending
+                                  ? 'Cancel this pending reservation? You can re-reserve after.'
+                                  : 'Are you sure you want to cancel this reservation?';
+                                if (confirm(msg)) {
+                                  cancelRsvpMutation.mutate(item.id);
+                                }
+                              }}
+                              disabled={cancelRsvpMutation.isPending}
+                              className="px-3.5 py-1.5 bg-[#3b1219] hover:bg-[#690005] text-[#ffb4ab] rounded-xl text-[12px] font-label-caps font-bold transition-colors disabled:opacity-50"
+                            >
+                              {cancelRsvpMutation.isPending ? 'Cancelling...' : 'Cancel'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="bg-[#201f1f] rounded-2xl p-8 text-center border border-[#353534] text-[#c6c6c7] font-data-mono text-[13px]">
+                  You haven't reserved spots for any upcoming meetups yet.
+                  <div className="mt-3">
+                    <button
+                      onClick={() => onNavigate('events')}
+                      className="px-4 py-2 bg-[#ffb4ab] text-[#690005] rounded-xl font-label-caps font-bold text-[12px]"
+                    >
+                      EXPLORE EVENTS
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </div>
     </div>

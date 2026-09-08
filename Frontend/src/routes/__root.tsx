@@ -43,7 +43,8 @@ function RootLayout() {
     currentScreen === 'admin-events' ||
     currentScreen === 'admin-users' ||
     currentScreen === 'admin-reports' ||
-    currentScreen === 'admin-verifications';
+    currentScreen === 'admin-verifications' ||
+    currentScreen === 'admin-payments';
 
   return (
     <CreateEventModalContext.Provider

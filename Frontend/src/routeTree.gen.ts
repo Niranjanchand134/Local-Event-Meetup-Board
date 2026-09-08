@@ -17,11 +17,14 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
+import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminVerificationsRouteImport } from './routes/admin/verifications'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
+import { Route as PaymentsEsewaCallbackRouteImport } from './routes/payments/esewa/callback'
+import { Route as PaymentsKhaltiCallbackRouteImport } from './routes/payments/khalti/callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -63,6 +66,11 @@ const AdminEventsRoute = AdminEventsRouteImport.update({
   path: '/admin/events',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/admin/payments',
+  path: '/admin/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
   id: '/admin/reports',
   path: '/admin/reports',
@@ -88,6 +96,16 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
   path: '/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentsEsewaCallbackRoute = PaymentsEsewaCallbackRouteImport.update({
+  id: '/payments/esewa/callback',
+  path: '/payments/esewa/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsKhaltiCallbackRoute = PaymentsKhaltiCallbackRouteImport.update({
+  id: '/payments/khalti/callback',
+  path: '/payments/khalti/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -97,12 +115,15 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verifications': typeof AdminVerificationsRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/payments/esewa/callback': typeof PaymentsEsewaCallbackRoute
+  '/payments/khalti/callback': typeof PaymentsKhaltiCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -112,12 +133,15 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verifications': typeof AdminVerificationsRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
+  '/payments/esewa/callback': typeof PaymentsEsewaCallbackRoute
+  '/payments/khalti/callback': typeof PaymentsKhaltiCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -128,12 +152,15 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verifications': typeof AdminVerificationsRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/payments/esewa/callback': typeof PaymentsEsewaCallbackRoute
+  '/payments/khalti/callback': typeof PaymentsKhaltiCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -145,12 +172,15 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verification'
     | '/admin/events'
+    | '/admin/payments'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/verifications'
     | '/events/$eventId'
     | '/admin/'
     | '/events/'
+    | '/payments/esewa/callback'
+    | '/payments/khalti/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -160,12 +190,15 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verification'
     | '/admin/events'
+    | '/admin/payments'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/verifications'
     | '/events/$eventId'
     | '/admin'
     | '/events'
+    | '/payments/esewa/callback'
+    | '/payments/khalti/callback'
   id:
     | '__root__'
     | '/'
@@ -175,12 +208,15 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verification'
     | '/admin/events'
+    | '/admin/payments'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/verifications'
     | '/events/$eventId'
     | '/admin/'
     | '/events/'
+    | '/payments/esewa/callback'
+    | '/payments/khalti/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -191,12 +227,15 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   VerificationRoute: typeof VerificationRoute
   AdminEventsRoute: typeof AdminEventsRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVerificationsRoute: typeof AdminVerificationsRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
+  PaymentsEsewaCallbackRoute: typeof PaymentsEsewaCallbackRoute
+  PaymentsKhaltiCallbackRoute: typeof PaymentsKhaltiCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -257,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/reports': {
       id: '/admin/reports'
       path: '/admin/reports'
@@ -292,6 +338,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payments/esewa/callback': {
+      id: '/payments/esewa/callback'
+      path: '/payments/esewa/callback'
+      fullPath: '/payments/esewa/callback'
+      preLoaderRoute: typeof PaymentsEsewaCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments/khalti/callback': {
+      id: '/payments/khalti/callback'
+      path: '/payments/khalti/callback'
+      fullPath: '/payments/khalti/callback'
+      preLoaderRoute: typeof PaymentsKhaltiCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -303,12 +363,15 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   VerificationRoute: VerificationRoute,
   AdminEventsRoute: AdminEventsRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVerificationsRoute: AdminVerificationsRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
+  PaymentsEsewaCallbackRoute: PaymentsEsewaCallbackRoute,
+  PaymentsKhaltiCallbackRoute: PaymentsKhaltiCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,6 +1,8 @@
 export type UserRole = "user" | "organizer" | "admin";
 export type EventStatus = "upcoming" | "completed" | "cancelled";
-export type RsvpStatus = "confirmed" | "waitlisted" | "cancelled";
+export type RsvpStatus = "confirmed" | "waitlisted" | "cancelled" | "pending_payment";
+export type PaymentStatus = "initiated" | "verified" | "failed" | "refunded";
+export type PaymentGateway = "esewa" | "khalti";
 
 export type EventCategory =
   | "garage_sale"
@@ -201,4 +203,63 @@ export interface VerificationStats {
   approved: number;
   rejected: number;
   total: number;
+}
+
+// ─── RSVP & Payment types ───────────────────────────────────────────────────
+
+export interface RsvpOut {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: RsvpStatus;
+  quantity: number;
+  created_at: string;
+}
+
+export interface PaymentOut {
+  id: string;
+  gateway: PaymentGateway;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  merchant_transaction_id: string;
+  gateway_reference?: string | null;
+  created_at: string;
+  verified_at?: string | null;
+}
+
+export interface RsvpWithPayment extends RsvpOut {
+  payment?: PaymentOut | null;
+  user_name?: string;
+  user_email?: string;
+}
+
+export interface CheckoutOut {
+  rsvp_id: string;
+  payment_id: string;
+  checkout_url: string;
+  method: "GET" | "POST";
+  fields: Record<string, string>;
+  merchant_transaction_id: string;
+  quantity: number;
+}
+
+export interface AdminPaymentOut {
+  payment_id: string;
+  rsvp_id: string;
+  event_id: string;
+  event_title: string;
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  gateway: PaymentGateway;
+  amount: number;
+  currency: string;
+  quantity: number;
+  payment_status: PaymentStatus;
+  rsvp_status: RsvpStatus;
+  merchant_transaction_id: string;
+  gateway_reference?: string | null;
+  created_at: string;
+  verified_at?: string | null;
 }

@@ -10,6 +10,7 @@ export type ScreenType =
   | 'admin-users' 
   | 'admin-reports' 
   | 'admin-verifications'
+  | 'admin-payments'
   | 'login' 
   | 'signup';
 

@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ScreenType } from '../../types/eventboard';
 import { useAuth } from '../../context/AuthContext';
 import { eventsApi } from '../../lib/eventsApi';
-import type { EventOut } from '../../types';
+import { adminApi } from '../../lib/adminApi';
+import type { EventOut, RsvpWithPayment } from '../../types';
 import {
   getEventImageUrl,
   formatEventDate,
@@ -28,6 +29,23 @@ export const ManageEventView: React.FC<ManageEventViewProps> = ({
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'upcoming' | 'completed' | 'cancelled'>('ALL');
   const [eventToCancel, setEventToCancel] = useState<EventOut | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Attendees & Payments Modal State
+  const [selectedEventForRsvps, setSelectedEventForRsvps] = useState<EventOut | null>(null);
+  const [attendeeSearch, setAttendeeSearch] = useState('');
+
+  // Fetch attendees / RSVPs for the selected event with live 15s polling
+  const {
+    data: eventRsvps = [],
+    isLoading: rsvpsLoading,
+    isRefetching: rsvpsRefetching,
+    refetch: refetchEventRsvps,
+  } = useQuery<RsvpWithPayment[]>({
+    queryKey: ['event-rsvps', selectedEventForRsvps?.id],
+    queryFn: () => adminApi.getEventRsvps(selectedEventForRsvps!.id),
+    enabled: !!selectedEventForRsvps,
+    refetchInterval: 15_000,
+  });
 
   // Fetch organizer's real created events from FastAPI
   const {
@@ -458,6 +476,15 @@ export const ManageEventView: React.FC<ManageEventViewProps> = ({
                       {/* Actions Column */}
                       <td className="p-4 min-w-[130px] whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* View Attendees / RSVPs Button */}
+                          <button
+                            onClick={() => setSelectedEventForRsvps(evt)}
+                            className="p-2 text-[#e5e2e1] hover:text-[#690005] hover:bg-[#60d394] transition-all rounded-xl shadow-sm border border-[#353534] flex items-center justify-center"
+                            title="View Attendees & Payments"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">group</span>
+                          </button>
+
                           {/* Public Preview Icon Button */}
                           <button
                             onClick={() => onNavigate('event-detail', evt.id)}
@@ -510,6 +537,203 @@ export const ManageEventView: React.FC<ManageEventViewProps> = ({
           </span>
         </div>
       </section>
+
+      {/* Attendees & Payments Modal */}
+      {selectedEventForRsvps && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in">
+          <div
+            onClick={() => setSelectedEventForRsvps(null)}
+            className="absolute inset-0 bg-[#0e0e0e]/80 backdrop-blur-sm"
+          ></div>
+          <div className="relative bg-[#201f1f] border border-[#353534] w-full max-w-4xl max-h-[85vh] rounded-2xl p-6 shadow-2xl flex flex-col gap-5 overflow-hidden animate-in zoom-in-95">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-[#353534] pb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#ffb4ab]/15 text-[#ffb4ab] border border-[#ffb4ab]/30">
+                    {selectedEventForRsvps.is_paid
+                      ? `Paid • NPR ${selectedEventForRsvps.price}`
+                      : 'Free Event'}
+                  </span>
+                  <span className="text-[11px] font-data-mono text-[#c6c6c7] flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-[#60d394] animate-pulse"></span>
+                    Live 15s
+                  </span>
+                </div>
+                <h3 className="font-headline-lg text-[22px] text-[#e5e2e1] font-bold">
+                  Attendees &amp; RSVPs
+                </h3>
+                <p className="font-data-mono text-[12px] text-[#ac8884] mt-0.5">
+                  Event ID: #{selectedEventForRsvps.id.slice(0, 8)} • Capacity: {selectedEventForRsvps.confirmed_count || 0} / {selectedEventForRsvps.max_attendees || '∞'}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => refetchEventRsvps()}
+                  disabled={rsvpsRefetching}
+                  className="p-2 bg-[#2a2a2a] hover:bg-[#353534] text-[#ffb4ab] rounded-xl border border-[#353534] transition-colors"
+                  title="Refresh RSVPs"
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${rsvpsRefetching ? 'animate-spin' : ''}`}>
+                    refresh
+                  </span>
+                </button>
+                <button
+                  onClick={() => setSelectedEventForRsvps(null)}
+                  className="p-2 text-[#c6c6c7] hover:text-white hover:bg-[#2a2a2a] rounded-xl transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-[#131313] border border-[#353534] rounded-xl p-3">
+                <span className="text-[10px] font-label-caps uppercase text-[#ac8884]">Confirmed</span>
+                <div className="font-data-mono text-[20px] font-bold text-[#74c69d]">
+                  {eventRsvps.filter((r) => r.status === 'confirmed').length}
+                </div>
+              </div>
+              <div className="bg-[#131313] border border-[#353534] rounded-xl p-3">
+                <span className="text-[10px] font-label-caps uppercase text-[#ac8884]">Pending Payment</span>
+                <div className="font-data-mono text-[20px] font-bold text-[#ffd166]">
+                  {eventRsvps.filter((r) => r.status === 'pending_payment').length}
+                </div>
+              </div>
+              <div className="bg-[#131313] border border-[#353534] rounded-xl p-3">
+                <span className="text-[10px] font-label-caps uppercase text-[#ac8884]">Cancelled</span>
+                <div className="font-data-mono text-[20px] font-bold text-[#ffb4ab]">
+                  {eventRsvps.filter((r) => r.status === 'cancelled').length}
+                </div>
+              </div>
+              <div className="bg-[#131313] border border-[#353534] rounded-xl p-3">
+                <span className="text-[10px] font-label-caps uppercase text-[#ac8884]">Collected Revenue</span>
+                <div className="font-data-mono text-[20px] font-bold text-[#e5e2e1]">
+                  NPR{' '}
+                  {eventRsvps
+                    .filter((r) => r.payment?.status === 'verified')
+                    .reduce((s, r) => s + (r.payment?.amount || 0), 0)
+                    .toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            {/* Search Attendee */}
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#ac8884] text-[18px]">
+                search
+              </span>
+              <input
+                type="text"
+                placeholder="Search attendee by name, email, or transaction ID..."
+                value={attendeeSearch}
+                onChange={(e) => setAttendeeSearch(e.target.value)}
+                className="w-full bg-[#131313] border border-[#353534] focus:border-[#ffb4ab] rounded-xl pl-9 pr-4 py-2 text-[13px] text-[#e5e2e1] font-data-mono placeholder-[#777] outline-none transition-colors"
+              />
+            </div>
+
+            {/* Attendees List / Table */}
+            <div className="flex-1 overflow-y-auto border border-[#353534] rounded-xl bg-[#131313] max-h-[350px]">
+              {rsvpsLoading ? (
+                <div className="p-8 text-center text-[#c6c6c7] font-data-mono text-[13px] flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined animate-spin text-[18px] text-[#ffb4ab]">
+                    progress_activity
+                  </span>
+                  Loading attendee records...
+                </div>
+              ) : eventRsvps.length === 0 ? (
+                <div className="p-8 text-center text-[#c6c6c7] font-data-mono text-[13px]">
+                  No attendees have reserved spots for this event yet.
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#353534] bg-[#1a1a1a] text-[#ac8884] font-label-caps text-[10px] uppercase tracking-wider sticky top-0">
+                      <th className="py-2.5 px-3 font-bold">Attendee</th>
+                      <th className="py-2.5 px-3 font-bold">RSVP Status</th>
+                      <th className="py-2.5 px-3 font-bold">Payment</th>
+                      <th className="py-2.5 px-3 font-bold">Reserved At</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#353534]/40 font-data-mono text-[12px]">
+                    {eventRsvps
+                      .filter((r) => {
+                        if (!attendeeSearch.trim()) return true;
+                        const q = attendeeSearch.toLowerCase();
+                        return (
+                          (r.user_name && r.user_name.toLowerCase().includes(q)) ||
+                          (r.user_email && r.user_email.toLowerCase().includes(q)) ||
+                          (r.payment?.merchant_transaction_id &&
+                            r.payment.merchant_transaction_id.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((r) => (
+                        <tr key={r.id} className="hover:bg-[#201f1f] transition-colors">
+                          <td className="py-3 px-3">
+                            <div className="font-sans font-semibold text-[13px] text-[#e5e2e1]">
+                              {r.user_name || 'Community Member'}
+                            </div>
+                            <div className="text-[11px] text-[#c6c6c7] truncate max-w-[180px]">
+                              {r.user_email || `User #${r.user_id.slice(0, 8)}`}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase border ${
+                                r.status === 'confirmed'
+                                  ? 'bg-[#1b4332] text-[#74c69d] border-[#2d6a4f]'
+                                  : r.status === 'pending_payment'
+                                  ? 'bg-[#4a3b00] text-[#ffd166] border-[#705500]'
+                                  : 'bg-[#3b1219] text-[#ffb4ab] border-[#690005]'
+                              }`}
+                            >
+                              {r.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            {r.payment ? (
+                              <div>
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] font-label-caps font-bold uppercase inline-flex items-center gap-1 ${
+                                    r.payment.gateway === 'esewa'
+                                      ? 'bg-[#103b22] text-[#60d394]'
+                                      : 'bg-[#2b194d] text-[#b388ff]'
+                                  }`}
+                                >
+                                  {r.payment.gateway.toUpperCase()} • NPR {r.payment.amount}
+                                </span>
+                                <div className="text-[10px] text-[#ac8884] mt-0.5">
+                                  Status: {r.payment.status}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-[#c6c6c7] text-[11px]">Free Spot</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3 text-[#ac8884] text-[11px]">
+                            {new Date(r.created_at).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setSelectedEventForRsvps(null)}
+                className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#353534] text-[#e5e2e1] font-label-caps text-[12px] font-bold rounded-xl transition-colors"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cancel Event Modal */}
       {eventToCancel && (

@@ -649,17 +649,6 @@ export const AdminEventsView: React.FC<AdminEventsViewProps> = ({ onNavigate }) 
                   </span>
                   {copyFeedback ? 'COPIED!' : 'COPY LINK'}
                 </button>
-
-                <button
-                  onClick={() => {
-                    setSelectedEvent(null);
-                    onNavigate('event-detail', selectedEvent.id);
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-[#201f1f] hover:bg-[#2a2a2a] border border-[#353534] text-[#e5e2e1] text-[12px] font-label-caps font-bold transition-colors flex items-center gap-1.5"
-                >
-                  <span className="material-symbols-outlined text-[16px]">visibility</span>
-                  PREVIEW
-                </button>
               </div>
 
               <div className="flex items-center gap-2">
