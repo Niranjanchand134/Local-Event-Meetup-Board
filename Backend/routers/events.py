@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.deps import get_current_user, require_verified_organizer
 from core.ownership import get_event_or_404, require_event_owner
+from core.rsvp_logic import count_confirmed
 from core.storage import save_event_cover_image
 from database import get_db
 from models.event import Event
@@ -38,7 +39,11 @@ async def my_created_events(
     stmt = stmt.order_by(Event.start_time.desc())
 
     events = (await db.scalars(stmt)).all()
-    return [build_event_out(e) for e in events]
+    result = []
+    for e in events:
+        cc = await count_confirmed(db, e.id)
+        result.append(build_event_out(e, cc))
+    return result
 
 
 @router.post("", response_model=EventOut, status_code=201)
@@ -104,13 +109,18 @@ async def list_events(
 
     stmt = stmt.order_by(Event.start_time).offset(skip).limit(limit)
     events = (await db.scalars(stmt)).all()
-    return [build_event_out(e) for e in events]
+    result = []
+    for e in events:
+        cc = await count_confirmed(db, e.id)
+        result.append(build_event_out(e, cc))
+    return result
 
 
 @router.get("/{event_id}", response_model=EventOut)
 async def get_event(event_id: str, db: AsyncSession = Depends(get_db)):
     event = await get_event_or_404(event_id, db)
-    return build_event_out(event)
+    cc = await count_confirmed(db, event_id)
+    return build_event_out(event, cc)
 
 
 @router.patch("/{event_id}", response_model=EventOut)

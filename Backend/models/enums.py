@@ -32,3 +32,21 @@ class EventStatus(str, enum.Enum):
     upcoming = "upcoming"
     completed = "completed"
     cancelled = "cancelled"
+
+class RSVPStatus(str, enum.Enum):
+    pending_payment = "pending_payment"  # paid event, checkout not completed yet
+    confirmed = "confirmed"
+    waitlisted = "waitlisted"
+    cancelled = "cancelled"
+
+
+class PaymentGateway(str, enum.Enum):
+    esewa = "esewa"
+    khalti = "khalti"
+
+
+class PaymentStatus(str, enum.Enum):
+    initiated = "initiated"  
+    verified = "verified"    
+    failed = "failed"
+    refunded = "refunded"
