@@ -91,7 +91,7 @@ function QuantityStepper({
 }
 
 export const EventDetailView: React.FC<EventDetailViewProps> = ({ eventId, onNavigate }) => {
-  const { user, isAuthenticated, isOrganizer, isAdmin } = useAuth();
+  const { isAuthenticated, isOrganizer, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
   const [isBookmarked, setIsBookmarked] = useState(false);

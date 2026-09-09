@@ -601,7 +601,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate
                     My Reserved Spots & Tickets
                   </h2>
                 </div>
-                <span className="text-[12px] font-data-mono text-[#ac8884]">
+                <span className="text-[12px] font-data-mono text-[#ac8884] px-2.5 py-0.5 bg-[#201f1f] border border-[#353534] rounded-full">
                   {myReservations.length} total
                 </span>
               </div>
@@ -612,28 +612,241 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate
                   Loading your reservations...
                 </div>
               ) : myReservations.length > 0 ? (
-                <div className="space-y-3">
-                  {myReservations.map((item) => {
-                    if (!item) return null;
+                <div className="bg-[#201f1f] border border-[#353534] rounded-2xl overflow-hidden shadow-xl">
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left font-body-sm text-[13px]">
+                      <thead>
+                        <tr className="border-b border-[#353534] bg-[#1a1919] font-label-caps text-[10px] text-[#ac8884] font-bold uppercase">
+                          <th className="py-3.5 px-5">Event</th>
+                          <th className="py-3.5 px-4">Event Date</th>
+                          <th className="py-3.5 px-4">Tickets</th>
+                          <th className="py-3.5 px-4">Status &amp; Payment</th>
+                          <th className="py-3.5 px-5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#2a2929]">
+                        {myReservations.map((item) => {
+                          if (!item) return null;
 
-                    const evt = allEvents.find((e) => e.id === item.event_id);
-                    const isPaid = !!item.payment;
-                    const isPending = item.status === 'pending_payment';
-                    const isConfirmed = item.status === 'confirmed';
-                    const qty = item.quantity ?? 1;
+                          const evt = allEvents.find((e) => e.id === item.event_id);
+                          const isPaid = !!item.payment;
+                          const isPending = item.status === 'pending_payment';
+                          const isConfirmed = item.status === 'confirmed';
+                          const qty = item.quantity ?? 1;
 
-                    return (
-                      <div
-                        key={item.id}
-                        className={`bg-[#201f1f] border rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
-                          isPending
-                            ? 'border-orange-500/30 hover:border-orange-500/50'
-                            : 'border-[#353534] hover:border-[#5c403c]'
-                        }`}
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            {/* RSVP Status Badge */}
+                          return (
+                            <tr
+                              key={item.id}
+                              className={`hover:bg-[#252424] transition-colors ${
+                                isPending ? 'bg-orange-500/[0.03]' : ''
+                              }`}
+                            >
+                              {/* Event Name & Category */}
+                              <td className="py-4 px-5">
+                                <button
+                                  onClick={() => onNavigate('event-detail', item.event_id)}
+                                  className="text-left font-bold text-[#e5e2e1] hover:text-[#ffb4ab] transition-colors block text-[14px] line-clamp-1"
+                                >
+                                  {evt?.title || 'Meetup Event'}
+                                </button>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {evt?.category && (
+                                    <span className="text-[10px] font-label-caps font-semibold uppercase text-[#ac8884]">
+                                      {CATEGORY_LABEL_MAP[evt.category as EventCategory] || evt.category}
+                                    </span>
+                                  )}
+                                  {(evt?.venue_name || evt?.city || evt?.address) && (
+                                    <span className="text-[11px] text-[#7d7a78] font-data-mono flex items-center gap-0.5 truncate max-w-[200px]">
+                                      <span className="material-symbols-outlined text-[12px]">location_on</span>
+                                      {evt.venue_name || evt.city || evt.address}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Event Date & Reserved Date */}
+                              <td className="py-4 px-4 font-data-mono">
+                                {evt ? (
+                                  <div>
+                                    <div className="text-[12px] text-[#e5e2e1] flex items-center gap-1.5 font-medium">
+                                      <span className="material-symbols-outlined text-[14px] text-[#ffb4ab]">calendar_today</span>
+                                      {formatEventDate(evt.start_time)}
+                                    </div>
+                                    <div className="text-[11px] text-[#ac8884] flex items-center gap-1 mt-0.5">
+                                      <span className="material-symbols-outlined text-[12px]">schedule</span>
+                                      {formatEventTime(evt.start_time)}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-[11px] text-[#7d7a78]">Date unavailable</span>
+                                )}
+                              </td>
+
+                              {/* Tickets Qty */}
+                              <td className="py-4 px-4 font-data-mono">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#2a2a2a] text-[#e5e2e1] border border-[#3a3a3a]">
+                                  <span className="material-symbols-outlined text-[13px] text-[#ffb4ab]">confirmation_number</span>
+                                  {qty} {qty === 1 ? 'ticket' : 'tickets'}
+                                </span>
+                              </td>
+
+                              {/* Status & Payment */}
+                              <td className="py-4 px-4">
+                                <div className="flex flex-col gap-1 items-start">
+                                  {/* Status Pill */}
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase border ${
+                                      isConfirmed
+                                        ? 'bg-[#1b4332] text-[#74c69d] border-[#2d6a4f]'
+                                        : isPending
+                                        ? 'bg-[#4a3b00] text-[#ffd166] border-[#705500]'
+                                        : 'bg-[#3b1219] text-[#ffb4ab] border-[#690005]'
+                                    }`}
+                                  >
+                                    {isPending ? '⏳ PAYMENT PENDING' : item.status.replace('_', ' ')}
+                                  </span>
+
+                                  {/* Payment Detail Pill */}
+                                  {isPaid && item.payment ? (
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase flex items-center gap-1 ${
+                                        item.payment.gateway === 'esewa'
+                                          ? 'bg-[#103b22] text-[#60d394] border border-[#1e6f42]'
+                                          : 'bg-[#2b194d] text-[#b388ff] border border-[#512da8]'
+                                      }`}
+                                    >
+                                      <span className="material-symbols-outlined text-[11px]">payments</span>
+                                      {item.payment.gateway.toUpperCase()} • {item.payment.currency} {item.payment.amount}
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#2a2a2a]/60 text-[#ac8884] border border-[#353534]">
+                                      Free Spot
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Action Icons */}
+                              <td className="py-4 px-5 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {/* Complete Payment Icon Button */}
+                                  {isPending && (
+                                    <button
+                                      onClick={() => onNavigate('event-detail', item.event_id)}
+                                      title="Complete Payment"
+                                      className="w-8 h-8 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/40 flex items-center justify-center transition-colors"
+                                    >
+                                      <span className="material-symbols-outlined text-[16px]">payments</span>
+                                    </button>
+                                  )}
+
+                                  {/* View Event Icon Button */}
+                                  <button
+                                    onClick={() => onNavigate('event-detail', item.event_id)}
+                                    title="View Event Details"
+                                    className="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#353534] text-[#e5e2e1] hover:text-[#ffb4ab] border border-[#3a3a3a] flex items-center justify-center transition-colors"
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">visibility</span>
+                                  </button>
+
+                                  {/* Cancel Icon Button */}
+                                  {(isConfirmed || isPending) && (
+                                    <button
+                                      onClick={() => {
+                                        const msg = isPending
+                                          ? 'Cancel this pending reservation? You can re-reserve after.'
+                                          : 'Are you sure you want to cancel this reservation?';
+                                        if (confirm(msg)) {
+                                          cancelRsvpMutation.mutate(item.id);
+                                        }
+                                      }}
+                                      disabled={cancelRsvpMutation.isPending}
+                                      title="Cancel Reservation"
+                                      className="w-8 h-8 rounded-lg bg-[#3b1219]/60 hover:bg-[#690005] text-[#ffb4ab] border border-[#690005] flex items-center justify-center transition-colors disabled:opacity-50"
+                                    >
+                                      <span className="material-symbols-outlined text-[16px]">
+                                        {cancelRsvpMutation.isPending ? 'progress_activity' : 'cancel'}
+                                      </span>
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Cards View */}
+                  <div className="md:hidden divide-y divide-[#2a2929]">
+                    {myReservations.map((item) => {
+                      if (!item) return null;
+
+                      const evt = allEvents.find((e) => e.id === item.event_id);
+                      const isPaid = !!item.payment;
+                      const isPending = item.status === 'pending_payment';
+                      const isConfirmed = item.status === 'confirmed';
+                      const qty = item.quantity ?? 1;
+
+                      return (
+                        <div key={item.id} className="p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <button
+                                onClick={() => onNavigate('event-detail', item.event_id)}
+                                className="text-left font-bold text-[#e5e2e1] hover:text-[#ffb4ab] text-[15px] line-clamp-1 block"
+                              >
+                                {evt?.title || 'Meetup Event'}
+                              </button>
+                              {evt && (
+                                <div className="flex items-center gap-1 text-[11px] text-[#ac8884] font-data-mono mt-0.5">
+                                  <span className="material-symbols-outlined text-[12px] text-[#ffb4ab]">calendar_today</span>
+                                  {formatEventDate(evt.start_time)} • {formatEventTime(evt.start_time)}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Action icons row for mobile */}
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              {isPending && (
+                                <button
+                                  onClick={() => onNavigate('event-detail', item.event_id)}
+                                  title="Complete Payment"
+                                  className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/40 flex items-center justify-center"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">payments</span>
+                                </button>
+                              )}
+                              <button
+                                onClick={() => onNavigate('event-detail', item.event_id)}
+                                title="View Event"
+                                className="w-8 h-8 rounded-lg bg-[#2a2a2a] text-[#e5e2e1] border border-[#3a3a3a] flex items-center justify-center"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">visibility</span>
+                              </button>
+                              {(isConfirmed || isPending) && (
+                                <button
+                                  onClick={() => {
+                                    const msg = isPending
+                                      ? 'Cancel this pending reservation?'
+                                      : 'Are you sure you want to cancel this reservation?';
+                                    if (confirm(msg)) {
+                                      cancelRsvpMutation.mutate(item.id);
+                                    }
+                                  }}
+                                  disabled={cancelRsvpMutation.isPending}
+                                  title="Cancel Reservation"
+                                  className="w-8 h-8 rounded-lg bg-[#3b1219]/60 text-[#ffb4ab] border border-[#690005] flex items-center justify-center"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">cancel</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase border ${
                                 isConfirmed
@@ -643,106 +856,23 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({ onNavigate
                                   : 'bg-[#3b1219] text-[#ffb4ab] border-[#690005]'
                               }`}
                             >
-                              {isPending ? '⏳ PAYMENT PENDING' : item.status.replace('_', ' ')}
+                              {isPending ? '⏳ PENDING' : item.status.replace('_', ' ')}
                             </span>
 
-                            {/* Ticket quantity badge */}
-                            {qty > 1 && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#ffb4ab]/10 text-[#ffb4ab] border border-[#ffb4ab]/20 flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[11px]">confirmation_number</span>
-                                {qty} TICKETS
-                              </span>
-                            )}
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#2a2a2a] text-[#e5e2e1] border border-[#3a3a3a]">
+                              {qty} {qty === 1 ? 'ticket' : 'tickets'}
+                            </span>
 
-                            {/* Payment Badge if applicable */}
                             {isPaid && item.payment && (
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase flex items-center gap-1 ${
-                                  item.payment.gateway === 'esewa'
-                                    ? 'bg-[#103b22] text-[#60d394] border border-[#1e6f42]'
-                                    : 'bg-[#2b194d] text-[#b388ff] border border-[#512da8]'
-                                }`}
-                              >
-                                <span className="material-symbols-outlined text-[11px]">payments</span>
-                                {item.payment.gateway.toUpperCase()} • {item.payment.currency} {item.payment.amount} ({item.payment.status})
-                              </span>
-                            )}
-
-                            {!isPaid && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#2a2a2a] text-[#c6c6c7] border border-[#3a3a3a]">
-                                Free Spot
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-label-caps font-bold uppercase bg-[#103b22] text-[#60d394] border border-[#1e6f42]">
+                                {item.payment.gateway.toUpperCase()} • {item.payment.currency} {item.payment.amount}
                               </span>
                             )}
                           </div>
-
-                          <h3
-                            onClick={() => onNavigate('event-detail', item.event_id)}
-                            className="font-headline-sm text-[16px] font-bold text-[#e5e2e1] hover:text-[#ffb4ab] cursor-pointer transition-colors"
-                          >
-                            {evt?.title || 'Meetup Event'}
-                          </h3>
-
-                          <div className="flex items-center gap-4 text-[12px] text-[#c6c6c7] font-data-mono mt-1">
-                            {evt && (
-                              <span className="flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[13px] text-[#ffb4ab]">calendar_today</span>
-                                {new Date(evt.start_time).toLocaleDateString()}
-                              </span>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[13px] text-[#ac8884]">schedule</span>
-                              Reserved: {new Date(item.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-
-                          {/* Pending payment note */}
-                          {isPending && (
-                            <p className="font-data-mono text-[11px] text-orange-400/80 mt-1.5">
-                              Payment incomplete — go to the event page to retry payment.
-                            </p>
-                          )}
                         </div>
-
-                        <div className="flex items-center gap-2 self-end md:self-center flex-wrap justify-end">
-                          {/* Complete Payment button for pending RSVPs */}
-                          {isPending && (
-                            <button
-                              onClick={() => onNavigate('event-detail', item.event_id)}
-                              className="px-3.5 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/40 rounded-xl text-[12px] font-label-caps font-bold transition-colors flex items-center gap-1"
-                            >
-                              <span className="material-symbols-outlined text-[13px]">payments</span>
-                              COMPLETE PAYMENT
-                            </button>
-                          )}
-
-                          <button
-                            onClick={() => onNavigate('event-detail', item.event_id)}
-                            className="px-3.5 py-1.5 bg-[#2a2a2a] hover:bg-[#353534] text-[#e5e2e1] rounded-xl text-[12px] font-label-caps font-bold transition-colors"
-                          >
-                            View Event
-                          </button>
-
-                          {/* Cancel — allowed for both confirmed and pending */}
-                          {(isConfirmed || isPending) && (
-                            <button
-                              onClick={() => {
-                                const msg = isPending
-                                  ? 'Cancel this pending reservation? You can re-reserve after.'
-                                  : 'Are you sure you want to cancel this reservation?';
-                                if (confirm(msg)) {
-                                  cancelRsvpMutation.mutate(item.id);
-                                }
-                              }}
-                              disabled={cancelRsvpMutation.isPending}
-                              className="px-3.5 py-1.5 bg-[#3b1219] hover:bg-[#690005] text-[#ffb4ab] rounded-xl text-[12px] font-label-caps font-bold transition-colors disabled:opacity-50"
-                            >
-                              {cancelRsvpMutation.isPending ? 'Cancelling...' : 'Cancel'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               ) : (
                 <div className="bg-[#201f1f] rounded-2xl p-8 text-center border border-[#353534] text-[#c6c6c7] font-data-mono text-[13px]">
