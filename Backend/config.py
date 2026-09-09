@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     esewa_status_url: str = "https://rc.esewa.com.np/api/epay/transaction/status/"
 
     # Khalti sandbox defaults.
-    khalti_secret_key: str = "test_secret_key_replace_me"
+    khalti_secret_key: str = "f81e323e589143a7bcb882db89df38ad"
     khalti_initiate_url: str = "https://dev.khalti.com/api/v2/epayment/initiate/"
     khalti_lookup_url: str = "https://dev.khalti.com/api/v2/epayment/lookup/"
 

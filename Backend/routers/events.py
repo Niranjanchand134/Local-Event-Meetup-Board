@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
@@ -109,8 +109,22 @@ async def list_events(
 
     stmt = stmt.order_by(Event.start_time).offset(skip).limit(limit)
     events = (await db.scalars(stmt)).all()
+
+    now = datetime.now(timezone.utc)
     result = []
     for e in events:
+        # Auto-mark events as completed if their end (or start) time has passed
+        event_end = e.end_time or e.start_time
+        # Make naive datetimes timezone-aware for comparison
+        event_end_aware = event_end.replace(tzinfo=timezone.utc) if event_end.tzinfo is None else event_end
+        if e.status == "upcoming" and event_end_aware < now:
+            e.status = "completed"  # type: ignore[assignment]
+            await db.commit()
+
+        # Exclude completed events from the public user listing
+        if e.status == "completed":
+            continue
+
         cc = await count_confirmed(db, e.id)
         result.append(build_event_out(e, cc))
     return result
